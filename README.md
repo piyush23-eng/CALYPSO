@@ -1,3 +1,13 @@
+---
+title: CALYPSO GATE-CS Reasoning Engine
+emoji: ⚡
+colorFrom: blue
+colorTo: cyan
+sdk: docker
+app_port: 8000
+pinned: false
+---
+
 # CALYPSO — Domain-Specialized GATE-CS Reasoning LLM
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
