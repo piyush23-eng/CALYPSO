@@ -1,0 +1,27 @@
+{
+  "total_examples": 59,
+  "splits": {
+    "train": 9,
+    "val": 33,
+    "test": 17
+  },
+  "subject_distribution": {
+    "Algorithms": 10,
+    "Operating Systems": 9,
+    "DBMS": 8,
+    "Computer Networks": 8,
+    "Theory of Computation": 8,
+    "Compiler Design": 8,
+    "Digital Logic": 8
+  },
+  "question_type_distribution": {
+    "MCQ": 36,
+    "NAT": 23
+  },
+  "average_prompt_words": 82.2,
+  "average_response_words": 196.1,
+  "leakage_verification": {
+    "zero_id_leakage": true,
+    "zero_content_hash_leakage": true
+  }
+}

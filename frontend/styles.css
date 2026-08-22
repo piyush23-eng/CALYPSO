@@ -1,0 +1,709 @@
+/* ==========================================================================
+   CALYPSO — UNIFIED SINGLE-WINDOW SCREEN WORKSPACE
+   Full Viewport (100vh) RSquad-Grade Brutalist Tech Interface
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Syne:wght@700;800;900&display=swap');
+
+:root {
+  /* DARK MODE (DEFAULT) — Obsidian Cyber Lab */
+  --bg-primary: #000000;
+  --bg-secondary: #080808;
+  --bg-surface: #0f0f0f;
+  --bg-input: #000000;
+  --bg-hover: #161616;
+  
+  --border-subtle: rgba(255, 255, 255, 0.15);
+  --border-strong: #ffffff;
+  
+  --text-primary: #ffffff;
+  --text-secondary: #8e8e8e;
+  --text-muted: #555555;
+  
+  --accent-highlight-bg: #ffffff;
+  --accent-highlight-text: #000000;
+  
+  --neon-cyan: #00f0ff;
+  --neon-emerald: #00ff66;
+  --neon-amber: #ffb800;
+  --neon-rose: #ff3366;
+  
+  --arena-base-border: rgba(255, 51, 102, 0.35);
+  --arena-base-bg: rgba(255, 51, 102, 0.05);
+  --arena-calypso-border: rgba(0, 240, 255, 0.4);
+  --arena-calypso-bg: radial-gradient(circle at top right, rgba(0, 240, 255, 0.04) 0%, #080808 80%);
+
+  --wireframe-line: rgba(255, 255, 255, 0.35);
+  --wireframe-node: #00f0ff;
+  
+  --font-hero: 'Syne', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* --------------------------------------------------------------------------
+   LIGHT MODE ESSENCE — Stark Swiss Editorial / Architectural Paper Lab
+   -------------------------------------------------------------------------- */
+[data-theme="light"] {
+  --bg-primary: #f5f5f7;
+  --bg-secondary: #ffffff;
+  --bg-surface: #eaeaea;
+  --bg-input: #ffffff;
+  --bg-hover: #e0e0e5;
+  
+  --border-subtle: rgba(0, 0, 0, 0.14);
+  --border-strong: #000000;
+  
+  --text-primary: #050505;
+  --text-secondary: #4a4a4a;
+  --text-muted: #888888;
+  
+  --accent-highlight-bg: #000000;
+  --accent-highlight-text: #ffffff;
+  
+  --neon-cyan: #0047ff; /* Electric Bauhaus Cobalt */
+  --neon-emerald: #008744; /* Deep Precision Emerald */
+  --neon-amber: #d97706; /* Rich Amber */
+  --neon-rose: #e11d48; /* Crimson */
+  
+  --arena-base-border: rgba(225, 29, 72, 0.3);
+  --arena-base-bg: rgba(225, 29, 72, 0.04);
+  --arena-calypso-border: rgba(0, 71, 255, 0.35);
+  --arena-calypso-bg: radial-gradient(circle at top right, rgba(0, 71, 255, 0.05) 0%, #ffffff 80%);
+
+  --wireframe-line: rgba(0, 0, 0, 0.3);
+  --wireframe-node: #0047ff;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+html, body {
+  height: 100vh;
+  overflow: hidden; /* Perfect single-window viewport */
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-viewport {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   Top Navigation Bar (RSquad Minimalist Monochrome)
+   -------------------------------------------------------------------------- */
+header {
+  height: 60px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.brand-square {
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.brand-title {
+  font-family: var(--font-hero);
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.brand-desc {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.nav-tab-btn {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.nav-tab-btn:hover {
+  color: var(--neon-cyan);
+}
+
+.nav-tab-btn.active {
+  color: var(--accent-highlight-text);
+  background: var(--accent-highlight-bg);
+  border-color: var(--border-strong);
+}
+
+.btn-ctrl {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+}
+
+.btn-ctrl:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-hover);
+}
+
+.btn-ctrl.on {
+  border-color: var(--neon-emerald);
+  color: var(--neon-emerald);
+}
+
+/* --------------------------------------------------------------------------
+   Compact Metrics Telemetry Strip
+   -------------------------------------------------------------------------- */
+.metrics-strip {
+  height: 42px;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.metric-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+}
+
+.metric-val {
+  font-weight: 800;
+}
+
+.metric-val.cyan { color: var(--neon-cyan); }
+.metric-val.emerald { color: var(--neon-emerald); }
+.metric-val.amber { color: var(--neon-amber); }
+.metric-val.white { color: var(--text-primary); }
+
+/* --------------------------------------------------------------------------
+   Unified Single-Window Screen Workspace
+   -------------------------------------------------------------------------- */
+.workspace-window {
+  display: grid;
+  grid-template-columns: 460px 1fr;
+  height: calc(100vh - 102px); /* Fills exact screen height */
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+/* Left Dock: Input Form (Internal Scroll) */
+.dock-panel {
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-subtle);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.dock-title {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.dock-title::before {
+  content: '■';
+  font-size: 0.55rem;
+  color: var(--text-primary);
+}
+
+.subj-selector-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.subj-chip {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.25rem 0.55rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.subj-chip:hover, .subj-chip.active {
+  border-color: var(--border-strong);
+  color: var(--accent-highlight-text);
+  background: var(--accent-highlight-bg);
+}
+
+.preset-selector-strip {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.4rem;
+}
+
+.preset-btn-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 0.5rem 0.65rem;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  transition: all 0.2s ease;
+}
+
+.preset-btn-card:hover {
+  border-color: var(--neon-cyan);
+  background: var(--bg-hover);
+}
+
+.preset-sub-text {
+  font-size: 0.6rem;
+  color: var(--neon-amber);
+  font-weight: 700;
+}
+
+.input-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 0.8fr;
+  gap: 0.4rem;
+}
+
+select, input, textarea {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 0.6rem 0.75rem;
+  font-size: 0.82rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+select:focus, input:focus, textarea:focus {
+  border-color: var(--neon-cyan);
+}
+
+textarea {
+  min-height: 90px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.opt-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+}
+
+.opt-tag {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--bg-primary);
+}
+
+.btn-solve-now {
+  background: var(--accent-highlight-bg);
+  color: var(--accent-highlight-text);
+  font-family: var(--font-mono);
+  font-weight: 900;
+  font-size: 0.88rem;
+  padding: 0.85rem 1.4rem;
+  border: 1px solid var(--border-strong);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.btn-solve-now:hover {
+  background: var(--neon-cyan);
+  border-color: var(--neon-cyan);
+  color: #000000;
+}
+
+.btn-solve-now:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   Right Stage: Unified Terminal / Arena Stage (Internal Scroll)
+   -------------------------------------------------------------------------- */
+.stage-panel {
+  padding: 1.75rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: var(--bg-primary);
+  height: 100%;
+  overflow-y: auto;
+}
+
+.stage-hud {
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.stage-stats {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.stage-stat-item {
+  color: var(--text-secondary);
+}
+
+.stage-stat-item span {
+  color: var(--neon-cyan);
+  font-weight: 800;
+}
+
+.stage-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-stage-action {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-stage-action:hover {
+  background: var(--accent-highlight-bg);
+  color: var(--accent-highlight-text);
+}
+
+/* Terminal Derivation Card */
+.terminal-window {
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  padding: 2rem;
+  min-height: 440px;
+  font-size: 0.92rem;
+  line-height: 1.8;
+  color: var(--text-primary);
+  flex: 1;
+  box-sizing: border-box;
+  max-width: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.terminal-window h3 {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--neon-cyan);
+  margin: 1.5rem 0 0.6rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.terminal-window h3:first-child {
+  margin-top: 0;
+}
+
+.terminal-window h3::before {
+  content: '■';
+  color: var(--neon-cyan);
+  font-size: 0.6rem;
+}
+
+.terminal-window ul {
+  list-style: none;
+  padding-left: 0.5rem;
+}
+
+.terminal-window li {
+  margin-bottom: 0.5rem;
+}
+
+.terminal-window code {
+  font-family: var(--font-mono);
+  background: var(--bg-hover);
+  border: 1px solid var(--border-subtle);
+  padding: 0.15rem 0.45rem;
+  color: var(--text-primary);
+}
+
+.terminal-final-ans {
+  border: 1px solid var(--neon-emerald);
+  background: rgba(0, 255, 102, 0.08);
+  padding: 1rem 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  color: var(--neon-emerald);
+  margin-top: 1.25rem;
+  box-sizing: border-box;
+  max-width: 100%;
+  width: 100%;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.final-ans-header {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--neon-emerald);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.final-ans-content {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.cursor-live {
+  display: inline-block;
+  width: 8px;
+  height: 15px;
+  background: var(--text-primary);
+  vertical-align: middle;
+  animation: blinkLive 0.7s infinite;
+  margin-left: 3px;
+}
+
+@keyframes blinkLive {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+/* --------------------------------------------------------------------------
+   Arena Split View (Under One Window)
+   -------------------------------------------------------------------------- */
+.arena-split-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.arena-box {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.arena-box.calypso-box {
+  border-color: var(--arena-calypso-border);
+  background: var(--arena-calypso-bg);
+}
+
+.arena-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.75rem;
+}
+
+.arena-model-name {
+  font-family: var(--font-hero);
+  font-size: 1.05rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.badge-base-box {
+  border: 1px solid var(--border-subtle);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  padding: 0.15rem 0.45rem;
+  color: var(--text-secondary);
+}
+
+.badge-calypso-box {
+  background: var(--neon-emerald);
+  color: #ffffff;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 0.65rem;
+  padding: 0.15rem 0.45rem;
+}
+
+[data-theme="dark"] .badge-calypso-box {
+  color: #000000;
+}
+
+.arena-body {
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+
+.failure-callout {
+  border: 1px dashed var(--neon-rose);
+  background: var(--arena-base-bg);
+  padding: 0.75rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--neon-rose);
+  margin-top: 0.75rem;
+}
+
+.success-callout {
+  border: 1px solid var(--neon-emerald);
+  background: rgba(0, 255, 102, 0.06);
+  padding: 0.75rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--neon-emerald);
+  margin-top: 0.75rem;
+}
+
+/* --------------------------------------------------------------------------
+   Syllabus Grid (Under One Window)
+   -------------------------------------------------------------------------- */
+.syllabus-grid-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.syllabus-mini-card {
+  border: 1px solid var(--border-subtle);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--bg-secondary);
+}
+
+.syllabus-mini-card:hover {
+  background: var(--bg-hover);
+}
+
+@media (max-width: 960px) {
+  html, body {
+    height: auto;
+    overflow: auto;
+  }
+  .workspace-window {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .arena-split-grid {
+    grid-template-columns: 1fr;
+  }
+}

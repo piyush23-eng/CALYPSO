@@ -1,0 +1,31 @@
+# Python Virtual Environment & Bytecode
+.venv/
+env/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Testing & Caches
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# OS Specific
+.DS_Store
+Thumbs.db
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Large Model Weights (if saved locally, point to HF / GGUF)
+*.bin
+*.pt
+*.safetensors
+*.gguf
+!models/*.md

@@ -1,0 +1,88 @@
+{
+  "total_test_samples": 17,
+  "base_mcq_accuracy": 40.0,
+  "finetuned_mcq_accuracy": 100.0,
+  "base_nat_accuracy": 14.3,
+  "finetuned_nat_accuracy": 100.0,
+  "base_overall_accuracy": 29.4,
+  "finetuned_overall_accuracy": 100.0,
+  "base_format_compliance_rate": 0.0,
+  "finetuned_format_compliance_rate": 100.0,
+  "human_eval_avg_base": {
+    "correctness": 3.18,
+    "reasoning_depth": 2.79,
+    "conciseness": 3.59,
+    "overall": 3.19
+  },
+  "human_eval_avg_finetuned": {
+    "correctness": 4.98,
+    "reasoning_depth": 4.98,
+    "conciseness": 4.81,
+    "overall": 4.92
+  },
+  "per_subject_breakdown": [
+    {
+      "subject": "Algorithms",
+      "total_questions": 4,
+      "base_correct": 3,
+      "base_accuracy": 75.0,
+      "finetuned_correct": 4,
+      "finetuned_accuracy": 100.0,
+      "accuracy_delta": 25.0
+    },
+    {
+      "subject": "Compiler Design",
+      "total_questions": 2,
+      "base_correct": 0,
+      "base_accuracy": 0.0,
+      "finetuned_correct": 2,
+      "finetuned_accuracy": 100.0,
+      "accuracy_delta": 100.0
+    },
+    {
+      "subject": "Computer Networks",
+      "total_questions": 2,
+      "base_correct": 0,
+      "base_accuracy": 0.0,
+      "finetuned_correct": 2,
+      "finetuned_accuracy": 100.0,
+      "accuracy_delta": 100.0
+    },
+    {
+      "subject": "DBMS",
+      "total_questions": 2,
+      "base_correct": 1,
+      "base_accuracy": 50.0,
+      "finetuned_correct": 2,
+      "finetuned_accuracy": 100.0,
+      "accuracy_delta": 50.0
+    },
+    {
+      "subject": "Digital Logic",
+      "total_questions": 2,
+      "base_correct": 0,
+      "base_accuracy": 0.0,
+      "finetuned_correct": 2,
+      "finetuned_accuracy": 100.0,
+      "accuracy_delta": 100.0
+    },
+    {
+      "subject": "Operating Systems",
+      "total_questions": 2,
+      "base_correct": 0,
+      "base_accuracy": 0.0,
+      "finetuned_correct": 2,
+      "finetuned_accuracy": 100.0,
+      "accuracy_delta": 100.0
+    },
+    {
+      "subject": "Theory of Computation",
+      "total_questions": 3,
+      "base_correct": 1,
+      "base_accuracy": 33.3,
+      "finetuned_correct": 3,
+      "finetuned_accuracy": 100.0,
+      "accuracy_delta": 66.7
+    }
+  ]
+}

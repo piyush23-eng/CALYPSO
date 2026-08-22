@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CALYPSO — Domain-Specialized GATE CS Reasoning Engine</title>
+  
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- KaTeX for crisp LaTeX math notation -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+</head>
+<body>
+
+  <!-- Unified Single-Window Viewport (100vh) -->
+  <div class="app-viewport">
+
+    <!-- Top Minimalist Monochrome Header (RSquad Style) -->
+    <header>
+      <div class="nav-brand">
+        <div class="brand-square">C</div>
+        <div>
+          <div class="brand-title">CALYPSO</div>
+          <div class="brand-desc">GATE-CS Reasoning Engine • 1.5B QLoRA</div>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <button class="nav-tab-btn active" id="tabNavSolver">01 // Solver Terminal</button>
+        <button class="nav-tab-btn" id="tabNavArena">02 // Arena Battle</button>
+        <button class="nav-tab-btn" id="tabNavSyllabus">03 // Syllabus</button>
+        <button class="btn-ctrl" id="themeToggle">
+          <span id="themeIcon">☀️</span>
+          <span id="themeText">LIGHT</span>
+        </button>
+        <button class="btn-ctrl" id="audioToggle">
+          <span>AUDIO: OFF</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- Real-Time Metrics Strip -->
+    <div class="metrics-strip">
+      <div class="metric-item">
+        <span>DELTA:</span>
+        <span class="metric-val cyan">+70.6% (GATE 2023–24 Test)</span>
+      </div>
+      <div class="metric-item">
+        <span>CPU SPEED:</span>
+        <span class="metric-val emerald">52.8 tok/s</span>
+      </div>
+      <div class="metric-item">
+        <span>COMPRESSION:</span>
+        <span class="metric-val amber">0.98 GB GGUF Q4_K_M</span>
+      </div>
+      <div class="metric-item">
+        <span>PEDAGOGY:</span>
+        <span class="metric-val white">100% 4-Phase CoT</span>
+      </div>
+    </div>
+
+    <!-- Main Workspace Window (Single Screen 100vh) -->
+    <main class="workspace-window">
+      
+      <!-- Left Dock: Problem Input Console (Internal Scroll) -->
+      <aside class="dock-panel">
+        
+        <!-- Syllabus Domain Selector -->
+        <div>
+          <div class="dock-title">Syllabus Domain</div>
+          <div class="subj-selector-grid" id="subjSelector">
+            <button class="subj-chip active" data-subj="Algorithms">Algorithms (15%)</button>
+            <button class="subj-chip" data-subj="Operating Systems">OS (10%)</button>
+            <button class="subj-chip" data-subj="DBMS">DBMS (9%)</button>
+            <button class="subj-chip" data-subj="Computer Networks">CN (11%)</button>
+            <button class="subj-chip" data-subj="Theory of Computation">TOC (9%)</button>
+            <button class="subj-chip" data-subj="Compiler Design">CD (5%)</button>
+            <button class="subj-chip" data-subj="Digital Logic">Digital Logic (6%)</button>
+          </div>
+        </div>
+
+        <!-- Curated Exam Challenge Presets -->
+        <div>
+          <div class="dock-title">Exam Challenge Presets</div>
+          <div class="preset-selector-strip">
+            <button class="preset-btn-card" data-preset="algo_recurrence">
+              <span class="preset-sub-text">Algorithms • 2023</span>
+              <span>Recurrence Order</span>
+            </button>
+            <button class="preset-btn-card" data-preset="os_paging">
+              <span class="preset-sub-text">OS • 2024</span>
+              <span>2-Level Paging EMAT</span>
+            </button>
+            <button class="preset-btn-card" data-preset="dbms_norm">
+              <span class="preset-sub-text">DBMS • 2023</span>
+              <span>3NF vs BCNF Closure</span>
+            </button>
+            <button class="preset-btn-card" data-preset="cn_subnet">
+              <span class="preset-sub-text">Networks • 2024</span>
+              <span>CIDR Host Offset NAT</span>
+            </button>
+            <button class="preset-btn-card" data-preset="toc_decide">
+              <span class="preset-sub-text">TOC • 2023</span>
+              <span>CFG Undecidability</span>
+            </button>
+            <button class="preset-btn-card" data-preset="cd_lalr">
+              <span class="preset-sub-text">Compilers • 2022</span>
+              <span>LALR State Conflicts</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Question Parameters -->
+        <div>
+          <div class="dock-title">Specifications</div>
+          <div class="input-row">
+            <div>
+              <select id="subjectInput">
+                <option value="Algorithms">Algorithms</option>
+                <option value="Operating Systems">Operating Systems</option>
+                <option value="DBMS">DBMS</option>
+                <option value="Computer Networks">Computer Networks</option>
+                <option value="Theory of Computation">Theory of Computation</option>
+                <option value="Compiler Design">Compiler Design</option>
+                <option value="Digital Logic">Digital Logic</option>
+              </select>
+            </div>
+            <div>
+              <select id="typeInput">
+                <option value="MCQ">MCQ</option>
+                <option value="NAT">NAT</option>
+                <option value="MSQ">MSQ</option>
+              </select>
+            </div>
+            <div>
+              <input type="number" id="marksInput" value="2" min="1" max="2" placeholder="Marks">
+            </div>
+          </div>
+          <input type="text" id="topicInput" placeholder="Topic (e.g. Asymptotic Analysis / Paging TLB)" style="margin-top: 0.4rem;">
+        </div>
+
+        <!-- Problem Formulation Textarea -->
+        <div>
+          <div class="dock-title">Problem Statement</div>
+          <textarea id="questionTextInput" placeholder="Enter GATE CS problem with LaTeX math (e.g. $T(n) = 2T(\sqrt{n}) + \log_2 n$)..."></textarea>
+        </div>
+
+        <!-- Candidate Options -->
+        <div id="optionsConsole">
+          <div class="dock-title">Candidate Options</div>
+          <div class="opt-row">
+            <span class="opt-tag">A</span>
+            <input type="text" id="optionA" placeholder="Option A expression...">
+          </div>
+          <div class="opt-row">
+            <span class="opt-tag">B</span>
+            <input type="text" id="optionB" placeholder="Option B expression...">
+          </div>
+          <div class="opt-row">
+            <span class="opt-tag">C</span>
+            <input type="text" id="optionC" placeholder="Option C expression...">
+          </div>
+          <div class="opt-row">
+            <span class="opt-tag">D</span>
+            <input type="text" id="optionD" placeholder="Option D expression...">
+          </div>
+        </div>
+
+        <!-- Synthesize Button -->
+        <div style="margin-top: auto; padding-top: 0.5rem;">
+          <button class="btn-solve-now" id="solveTerminalBtn">
+            <span>Synthesize Mathematical Proof</span>
+            <span>⚡</span>
+          </button>
+        </div>
+
+      </aside>
+
+      <!-- Right Stage: Dynamic View Container (Internal Scroll) -->
+      <section class="stage-panel" id="mainStageArea">
+        
+        <!-- Live Telemetry HUD Bar -->
+        <div class="stage-hud">
+          <div class="stage-stats">
+            <div class="stage-stat-item">ENGINE: <span>CALYPSO-QWEN-1.5B</span></div>
+            <div class="stage-stat-item">LATENCY: <span id="stageLatency">--</span></div>
+            <div class="stage-stat-item">THROUGHPUT: <span id="stageTps">--</span></div>
+            <div class="stage-stat-item">TOKENS: <span id="stageTokens">0</span></div>
+          </div>
+          <div class="stage-actions">
+            <button class="btn-stage-action" onclick="copyTerminalMarkdown()">Copy Markdown</button>
+            <button class="btn-stage-action" onclick="window.print()">Print Proof</button>
+          </div>
+        </div>
+
+        <!-- Derivation Terminal Card (REASONING TERMINAL // STEP-BY-STEP PROOF) -->
+        <div class="terminal-window" id="terminalOutputWindow">
+          <div style="color: var(--text-muted); text-align: center; margin-top: 80px;">
+            <div style="font-family: var(--font-hero); font-size: 1.35rem; font-weight: 900; color: var(--text-primary); margin-bottom: 0.5rem; letter-spacing: -0.02em;">
+              REASONING TERMINAL // STEP-BY-STEP PROOF
+            </div>
+            <div style="font-size: 0.88rem; color: var(--text-secondary); max-width: 480px; margin: 0 auto; line-height: 1.6;">
+              Select an exam challenge preset on the left dock or formulate a custom problem. Calypso will synthesize the 4-phase mathematical proof with line-by-line LaTeX equations.
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
