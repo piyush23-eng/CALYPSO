@@ -1,0 +1,182 @@
+[
+  {
+    "question_id": "GATE_EVAL_01",
+    "subject": "Operating Systems",
+    "topic": "Virtual Memory & Paging",
+    "question": "How is Effective Memory Access Time (EMAT) calculated in a 2-level paging system with TLB hit ratio?",
+    "ground_truth_answer": "In 2-level paging, EMAT = h * (t_tlb + t_m) + (1 - h) * (t_tlb + 3 * t_m), where h is the TLB hit ratio, t_tlb is TLB access latency, and t_m is main memory access time. On a miss, 2 page table accesses plus 1 data access are required.",
+    "ground_truth_context_keywords": ["effective memory access time", "emat", "tlb hit ratio", "2-level paging", "main memory access"],
+    "expected_source_file": "os_notes.md"
+  },
+  {
+    "question_id": "GATE_EVAL_02",
+    "subject": "Operating Systems",
+    "topic": "CPU Scheduling",
+    "question": "How does Shortest Remaining Time First (SRTF) scheduling calculate waiting time and minimize average waiting time?",
+    "ground_truth_answer": "SRTF is the preemptive version of SJF. Waiting time is calculated as Turnaround Time minus Burst Time (WT = TAT - BT), where TAT = Completion Time - Arrival Time. It is provably optimal for minimizing average waiting time.",
+    "ground_truth_context_keywords": ["shortest remaining time first", "srtf", "waiting time", "burst time", "preemptive"],
+    "expected_source_file": "os_notes.md"
+  },
+  {
+    "question_id": "GATE_EVAL_03",
+    "subject": "Operating Systems",
+    "topic": "Deadlocks",
+    "question": "What is Banker's Algorithm and how is the Need matrix defined in deadlock avoidance?",
+    "ground_truth_answer": "Banker's Algorithm tests for safety by simulating resource allocation for maximum possible amounts. The Need matrix is defined as Need[i][j] = Max[i][j] - Allocation[i][j].",
+    "ground_truth_context_keywords": ["banker's algorithm", "need matrix", "max allocation", "safe state", "deadlock avoidance"],
+    "expected_source_file": "os_notes.md"
+  },
+  {
+    "question_id": "GATE_EVAL_04",
+    "subject": "Operating Systems",
+    "topic": "Page Replacement",
+    "question": "What is Belady's Anomaly and which page replacement algorithms are immune to it?",
+    "ground_truth_answer": "Belady's Anomaly is the phenomenon where increasing the number of page frames results in an increase in page faults. FIFO exhibits Belady's anomaly, whereas stack algorithms like LRU and Optimal are provably immune.",
+    "ground_truth_context_keywords": ["belady's anomaly", "fifo", "page replacement", "stack algorithms", "lru"],
+    "expected_source_file": "os_notes.md"
+  },
+  {
+    "question_id": "GATE_EVAL_05",
+    "subject": "Database Management Systems",
+    "topic": "Transactions & Concurrency Control",
+    "question": "Why does Strict 2-Phase Locking (Strict 2PL) eliminate cascading aborts and guarantee conflict serializability?",
+    "ground_truth_answer": "Strict 2PL requires all exclusive (write) locks to be held until the transaction explicitly commits or aborts. This prevents other transactions from reading uncommitted dirty data, eliminating cascading rollbacks while ensuring conflict serializability.",
+    "ground_truth_context_keywords": ["strict 2pl", "conflict serializability", "cascading aborts", "exclusive locks", "commit"],
+    "expected_source_file": "dbms_notes.md"
+  },
+  {
+    "question_id": "GATE_EVAL_06",
+    "subject": "Database Management Systems",
+    "topic": "Normalization",
+    "question": "What is the highest normal form for a relation where every attribute is a prime attribute?",
+    "ground_truth_answer": "If every attribute in a relation is prime (part of some candidate key), the relation is automatically in Third Normal Form (3NF), but not necessarily in BCNF.",
+    "ground_truth_context_keywords": ["prime attribute", "3nf", "bcnf", "candidate key", "third normal form"],
+    "expected_source_file": "dbms_notes.md"
+  },
+  {
+    "question_id": "GATE_EVAL_07",
+    "subject": "Database Management Systems",
+    "topic": "Indexing & B+ Trees",
+    "question": "What are the structural properties and fanout constraints of a B+ Tree index in databases?",
+    "ground_truth_answer": "In a B+ Tree of order p, all leaf nodes appear at the same depth and store actual data pointers linked as a doubly linked list. Non-leaf nodes store search keys and child tree pointers with node occupancy between ceil(p/2) and p pointers.",
+    "ground_truth_context_keywords": ["b+ tree", "order p", "leaf nodes", "search keys", "fanout"],
+    "expected_source_file": "dbms_notes.md"
+  },
+  {
+    "question_id": "GATE_EVAL_08",
+    "subject": "Database Management Systems",
+    "topic": "Serializability",
+    "question": "How is a precedence graph (serialization graph) used to test conflict serializability of a schedule?",
+    "ground_truth_answer": "A precedence graph has transactions as vertices and directed edges (Ti -> Tj) for conflicting operations where Ti executes before Tj. A schedule is conflict serializable if and only if its precedence graph contains no directed cycles.",
+    "ground_truth_context_keywords": ["precedence graph", "conflict serializability", "directed cycle", "conflicting operations", "topological sort"],
+    "expected_source_file": "dbms_notes.md"
+  },
+  {
+    "question_id": "GATE_EVAL_09",
+    "subject": "Algorithms",
+    "topic": "Heap Construction",
+    "question": "What is the worst-case time complexity of constructing a binary max-heap from an unsorted array of n elements?",
+    "ground_truth_answer": "Building a binary max-heap from an unsorted array of n elements takes O(n) worst-case time using Floyd's bottom-up build-heap algorithm, derived from the sum sum_{h=0}^{floor(log n)} (n / 2^{h+1}) * O(h) = O(n).",
+    "ground_truth_context_keywords": ["binary max-heap", "build-heap", "time complexity", "o(n)", "floyd"],
+    "expected_source_file": "algorithms_notes.md"
+  },
+  {
+    "question_id": "GATE_EVAL_10",
+    "subject": "Algorithms",
+    "topic": "Asymptotic Analysis & Recurrences",
+    "question": "How is the Master Theorem applied to solve divide-and-conquer recurrence relations of the form T(n) = a T(n/b) + f(n)?",
+    "ground_truth_answer": "The Master Theorem compares f(n) with n^{log_b a}. If f(n) = O(n^{log_b a - epsilon}), T(n) = Theta(n^{log_b a}). If f(n) = Theta(n^{log_b a} * log^k n), T(n) = Theta(n^{log_b a} * log^{k+1} n). If f(n) = Omega(n^{log_b a + epsilon}), T(n) = Theta(f(n)).",
+    "ground_truth_context_keywords": ["master theorem", "recurrence", "divide and conquer", "log_b a", "asymptotic"],
+    "expected_source_file": "algorithms_notes.md"
+  },
+  {
+    "question_id": "GATE_EVAL_11",
+    "subject": "Algorithms",
+    "topic": "Graph Algorithms",
+    "question": "What are the time complexities of Dijkstra's algorithm and Bellman-Ford algorithm for shortest paths?",
+    "ground_truth_answer": "Dijkstra's algorithm with a Fibonacci/min-binary heap runs in O((V + E) log V) and cannot handle negative edge weights. Bellman-Ford runs in O(V * E) and detects negative weight cycles.",
+    "ground_truth_context_keywords": ["dijkstra", "bellman-ford", "shortest path", "negative weight cycle", "min-heap"],
+    "expected_source_file": "algorithms_notes.md"
+  },
+  {
+    "question_id": "GATE_EVAL_12",
+    "subject": "Algorithms",
+    "topic": "Dynamic Programming",
+    "question": "What is the recurrence relation and space-time complexity of the 0/1 Knapsack problem?",
+    "ground_truth_answer": "The 0/1 Knapsack DP relation is DP[i][w] = max(DP[i-1][w], DP[i-1][w - wt[i]] + val[i]) for w >= wt[i]. The time complexity is O(n * W) (pseudo-polynomial) with O(W) space optimization.",
+    "ground_truth_context_keywords": ["0/1 knapsack", "dynamic programming", "recurrence", "pseudo-polynomial", "o(n*w)"],
+    "expected_source_file": "algorithms_notes.md"
+  },
+  {
+    "question_id": "GATE_EVAL_13",
+    "subject": "Computer Networks",
+    "topic": "Transport Layer & TCP",
+    "question": "What are the three distinct phases of TCP Congestion Control and how does the congestion window grow in each?",
+    "ground_truth_answer": "TCP congestion control operates in Slow Start (exponential growth: cwnd doubles every RTT), Congestion Avoidance (additive increase: cwnd increases by 1 MSS per RTT), and Fast Recovery (multiplicative decrease after 3 duplicate ACKs without resetting to 1 MSS).",
+    "ground_truth_context_keywords": ["tcp congestion control", "slow start", "congestion avoidance", "fast recovery", "cwnd"],
+    "expected_source_file": "networks_notes.md"
+  },
+  {
+    "question_id": "GATE_EVAL_14",
+    "subject": "Computer Networks",
+    "topic": "Flow Control Protocols",
+    "question": "How is link utilization efficiency calculated in Stop-and-Wait and Sliding Window (Go-Back-N, Selective Repeat) protocols?",
+    "ground_truth_answer": "Efficiency for Stop-and-Wait is eta = 1 / (1 + 2a), where a = T_prop / T_trans. For Sliding Window with window size W, efficiency is eta = min(1, W / (1 + 2a)).",
+    "ground_truth_context_keywords": ["link utilization", "stop-and-wait", "go-back-n", "selective repeat", "propagation delay"],
+    "expected_source_file": "networks_notes.md"
+  },
+  {
+    "question_id": "GATE_EVAL_15",
+    "subject": "Computer Networks",
+    "topic": "IP Addressing & Subnetting",
+    "question": "How are subnet masks and CIDR prefixes used to calculate total usable host addresses and broadcast addresses?",
+    "ground_truth_answer": "In IPv4 /n CIDR notation, the host portion has (32 - n) bits. Total host configurations = 2^{32-n}. Usable host addresses = 2^{32-n} - 2 (subtracting network address and direct broadcast address).",
+    "ground_truth_context_keywords": ["cidr", "subnet mask", "usable host addresses", "broadcast address", "ipv4"],
+    "expected_source_file": "networks_notes.md"
+  },
+  {
+    "question_id": "GATE_EVAL_16",
+    "subject": "Theory of Computation",
+    "topic": "Chomsky Hierarchy & Grammars",
+    "question": "What are the four levels of Chomsky Hierarchy and their corresponding recognizing automata?",
+    "ground_truth_answer": "Type 3 (Regular) -> Finite Automata (DFA/NFA); Type 2 (Context-Free) -> Pushdown Automata (PDA); Type 1 (Context-Sensitive) -> Linear Bounded Automata (LBA); Type 0 (Unrestricted / Recursively Enumerable) -> Turing Machine.",
+    "ground_truth_context_keywords": ["chomsky hierarchy", "regular", "context-free", "pushdown automata", "turing machine"],
+    "expected_source_file": "toc_compiler_notes.md"
+  },
+  {
+    "question_id": "GATE_EVAL_17",
+    "subject": "Theory of Computation",
+    "topic": "Pumping Lemma & Regular Languages",
+    "question": "How is Pumping Lemma for Regular Languages used to prove that a language is not regular?",
+    "ground_truth_answer": "If L is regular, there exists pumping length p such that any string s in L with |s| >= p can be split into s = xyz satisfying |y| > 0, |xy| <= p, and xy^i z in L for all i >= 0. Finding a contradiction proves L is not regular.",
+    "ground_truth_context_keywords": ["pumping lemma", "regular language", "pumping length", "contradiction", "automata"],
+    "expected_source_file": "toc_compiler_notes.md"
+  },
+  {
+    "question_id": "GATE_EVAL_18",
+    "subject": "Compiler Design",
+    "topic": "Parsing & LR Parsers",
+    "question": "What causes shift-reduce and reduce-reduce conflicts in LR(0), SLR(1), and LALR(1) parsing tables?",
+    "ground_truth_answer": "A shift-reduce conflict occurs when a parser state simultaneously allows shifting a terminal and reducing via a production. A reduce-reduce conflict occurs when multiple reduce actions are valid for the same lookahead symbol.",
+    "ground_truth_context_keywords": ["shift-reduce", "reduce-reduce", "lr parser", "lalr(1)", "lookahead"],
+    "expected_source_file": "toc_compiler_notes.md"
+  },
+  {
+    "question_id": "GATE_EVAL_19",
+    "subject": "Compiler Design",
+    "topic": "Syntax Directed Translation & Code Optimization",
+    "question": "What is the difference between S-attributed and L-attributed Syntax Directed Definitions (SDDs)?",
+    "ground_truth_answer": "S-attributed definitions use only synthesized attributes (evaluated bottom-up during LR parsing). L-attributed definitions allow both synthesized attributes and inherited attributes restricted to evaluate from left-to-right siblings or parent nodes.",
+    "ground_truth_context_keywords": ["s-attributed", "l-attributed", "synthesized attributes", "inherited attributes", "sdd"],
+    "expected_source_file": "toc_compiler_notes.md"
+  },
+  {
+    "question_id": "GATE_EVAL_20",
+    "subject": "General / Syllabus",
+    "topic": "GATE CS Syllabus & Scoring",
+    "question": "What is the weightage distribution and core subject list in the official GATE Computer Science syllabus?",
+    "ground_truth_answer": "General Aptitude carries 15 marks, Engineering Mathematics + Discrete Math carries ~13 marks, and Core CS subjects (OS, DBMS, Algorithms, TOC, Compilers, CN, COA, Digital Logic, Programming) carry ~72 marks out of 100.",
+    "ground_truth_context_keywords": ["gate computer science syllabus", "general aptitude", "engineering mathematics", "core cs", "weightage"],
+    "expected_source_file": "gate_cs_syllabus.md"
+  }
+]
