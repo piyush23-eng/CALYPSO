@@ -12,8 +12,9 @@ def test_health_endpoint():
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "healthy"
-    assert data["service"] == "gate-cs-doubt-solver"
+    assert "CALYPSO" in data["service"]
     assert "quantization" in data
+    assert data["features"]["multi_turn_chat"] is True
 
 
 def test_solve_endpoint_mcq():
@@ -35,10 +36,11 @@ def test_solve_endpoint_mcq():
     assert response.status_code == 200
     data = response.json()
     assert "solution_markdown" in data
-    assert "### 1. Conceptual Framework" in data["solution_markdown"]
-    assert "### 4. Final Answer" in data["solution_markdown"]
+    assert "Conceptual Framework" in data["solution_markdown"]
+    assert "Final Answer" in data["solution_markdown"]
     assert data["inference_latency_ms"] >= 0
     assert data["tokens_generated"] > 0
+    assert data["structured_phases"] is not None
 
 
 def test_compare_endpoint():
@@ -81,5 +83,31 @@ def test_streaming_endpoint():
 
     chunks = list(response.iter_lines())
     assert len(chunks) > 0
-    # Must contain data payload and [DONE] marker
     assert any("[DONE]" in chunk for chunk in chunks)
+
+
+def test_multi_turn_chat_endpoint():
+    payload = {
+        "messages": [
+            {"role": "user", "content": "Explain why TLB miss increases access time in 2-level paging."},
+        ],
+        "subject": "Operating Systems",
+        "topic": "Paging",
+    }
+    response = client.post("/api/chat", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "reply" in data
+    assert len(data["reply"]) > 10
+
+
+def test_tool_execute_endpoint():
+    payload = {
+        "tool_name": "code_interpreter",
+        "code": "a = 5\nb = 10\nprint(a * b)",
+    }
+    response = client.post("/api/tools/execute", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert data["output"] == "50"

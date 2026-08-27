@@ -1,8 +1,8 @@
-"""Answer extraction and normalization for objective MCQ/NAT benchmarking."""
+"""Answer extraction and normalization for objective MCQ/MSQ/NAT benchmarking."""
 
 import math
 import re
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 
 class AnswerExtractor:
@@ -10,7 +10,7 @@ class AnswerExtractor:
 
     @staticmethod
     def extract_mcq_answer(text: str) -> Optional[str]:
-        """Extracts option letter (A, B, C, D) from response text."""
+        """Extracts single option letter (A, B, C, D) from response text."""
         if not text:
             return None
 
@@ -18,7 +18,6 @@ class AnswerExtractor:
         final_section = re.search(r"###\s*4\.\s*Final Answer.*?(?:$|\n\n)", text, re.IGNORECASE | re.DOTALL)
         search_scope = final_section.group(0) if final_section else text[-300:]
 
-        # Patterns like: **Correct Option**: **(B)** or Option (B) or Option B or (B)
         patterns = [
             r"Correct Option\**\s*:\s*\**\(([A-D])\)\**",
             r"Correct Option\**\s*:\s*\**([A-D])\b",
@@ -42,6 +41,30 @@ class AnswerExtractor:
                 return match.group(1).upper()
 
         return None
+
+    @staticmethod
+    def extract_msq_answers(text: str) -> List[str]:
+        """Extracts multiple select option letters (e.g. ['A', 'C']) from response text."""
+        if not text:
+            return []
+
+        final_section = re.search(r"###\s*4\.\s*Final Answer.*?(?:$|\n\n)", text, re.IGNORECASE | re.DOTALL)
+        search_scope = final_section.group(0) if final_section else text[-400:]
+
+        # Look for patterns like **(A, C)** or Options A, C or (A) and (C)
+        multi_pat = r"Correct Options?\**\s*:\s*\**\(?([A-D](?:\s*,\s*[A-D])+)\)?"
+        m = re.search(multi_pat, search_scope, re.IGNORECASE)
+        if m:
+            return sorted(list(set(re.findall(r"[A-D]", m.group(1).upper()))))
+
+        # Look for all (A), (B), etc. in final scope
+        matches = re.findall(r"\(([A-D])\)", search_scope)
+        if matches:
+            return sorted(list(set(m.upper() for m in matches)))
+
+        # Fallback to single MCQ extraction
+        single = AnswerExtractor.extract_mcq_answer(text)
+        return [single] if single else []
 
     @staticmethod
     def extract_nat_answer(text: str) -> Optional[str]:
@@ -99,17 +122,20 @@ class AnswerExtractor:
             except ValueError:
                 return extracted == gt_clean, extracted
 
-        else:  # MSQ or other
-            extracted = cls.extract_mcq_answer(response_text)
-            return (extracted == gt_clean) if extracted else False, extracted
+        else:  # MSQ
+            extracted_list = cls.extract_msq_answers(response_text)
+            extracted_str = ", ".join(extracted_list)
+            gt_set = set(re.findall(r"[A-D]", gt_clean))
+            is_correct = set(extracted_list) == gt_set
+            return is_correct, extracted_str
 
     @staticmethod
     def check_format_compliance(text: str) -> bool:
         """Verifies if the response follows the 4-phase pedagogical CoT structure."""
         if not text:
             return False
-        c1 = "### 1. Conceptual Framework" in text or "1. Conceptual Framework" in text
-        c2 = "### 2. Step-by-Step Derivation" in text or "2. Step-by-Step Derivation" in text
-        c3 = "### 3. Option Evaluation" in text or "3. Value Calculation" in text or "Option Evaluation" in text
-        c4 = "### 4. Final Answer" in text or "4. Final Answer" in text
+        c1 = "### 1. Conceptual Framework" in text or "1. Conceptual Framework" in text or "Phase 1" in text
+        c2 = "### 2. Step-by-Step Derivation" in text or "2. Step-by-Step Derivation" in text or "Phase 2" in text
+        c3 = "### 3. Option Evaluation" in text or "3. Value Calculation" in text or "Option Evaluation" in text or "Phase 3" in text
+        c4 = "### 4. Final Answer" in text or "4. Final Answer" in text or "Phase 4" in text
         return bool(c1 and c2 and c3 and c4)

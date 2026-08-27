@@ -1,6 +1,6 @@
 """API schemas for FastAPI Backend."""
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
 
@@ -14,10 +14,18 @@ class SolveRequest(BaseModel):
     model_type: str = Field("finetuned", json_schema_extra={"example": "finetuned"})  # 'finetuned' or 'base'
 
 
+class StructuredPhases(BaseModel):
+    phase1_concept: Optional[str] = None
+    phase2_derivation: Optional[str] = None
+    phase3_elimination: Optional[str] = None
+    phase4_answer: Optional[str] = None
+
+
 class SolveResponse(BaseModel):
     model_name: str
     solution_markdown: str
     extracted_answer: Optional[str] = None
+    structured_phases: Optional[StructuredPhases] = None
     inference_latency_ms: float
     tokens_generated: int
     tokens_per_second: float
@@ -37,3 +45,41 @@ class CompareResponse(BaseModel):
     base_model_result: SolveResponse
     finetuned_model_result: SolveResponse
     quality_delta: str
+
+
+class ChatMessage(BaseModel):
+    role: str = Field(..., description="Role: 'user', 'assistant', or 'system'")
+    content: str = Field(..., description="Message text content")
+
+
+class MultiTurnChatRequest(BaseModel):
+    messages: List[ChatMessage] = Field(..., description="Chronological conversation turns")
+    subject: Optional[str] = "Algorithms"
+    topic: Optional[str] = "General"
+    question_type: Optional[str] = "MCQ"
+    marks: Optional[int] = 2
+    stream: bool = False
+
+
+class ImageSolveRequest(BaseModel):
+    image_data: str = Field(..., description="Base64 data URI of the question screenshot")
+    subject: Optional[str] = None
+    topic: Optional[str] = None
+
+
+class ImageSolveResponse(BaseModel):
+    extracted_data: Dict[str, Any]
+    solution: SolveResponse
+
+
+class ToolExecutionRequest(BaseModel):
+    tool_name: str = Field(..., description="e.g. 'code_interpreter'")
+    code: str = Field(..., description="Python code block to execute in sandbox")
+
+
+class ToolExecutionResponse(BaseModel):
+    success: bool
+    output: str
+    error: Optional[str] = None
+    variables: Optional[Dict[str, str]] = None
+    elapsed_ms: float

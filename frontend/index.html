@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CALYPSO — Domain-Specialized GATE CS Reasoning Engine</title>
+  <title>CALYPSO 2.0 — Domain-Specialized GATE CS Reasoning Engine</title>
   
   <link rel="stylesheet" href="styles.css">
   
@@ -14,29 +14,27 @@
 </head>
 <body>
 
-  <!-- Unified Single-Window Viewport (100vh) -->
+  <!-- Unified Single-Window Viewport -->
   <div class="app-viewport">
 
-    <!-- Top Minimalist Monochrome Header (RSquad Style) -->
+    <!-- Top Header -->
     <header>
       <div class="nav-brand">
         <div class="brand-square">C</div>
         <div>
-          <div class="brand-title">CALYPSO</div>
-          <div class="brand-desc">GATE-CS Reasoning Engine • 1.5B QLoRA</div>
+          <div class="brand-title">CALYPSO 2.0</div>
+          <div class="brand-desc">GATE-CS Reasoning Engine • RLVR & Multi-Turn Verified</div>
         </div>
       </div>
 
       <nav class="nav-links">
-        <button class="nav-tab-btn active" id="tabNavSolver">01 // Solver Terminal</button>
-        <button class="nav-tab-btn" id="tabNavArena">02 // Arena Battle</button>
-        <button class="nav-tab-btn" id="tabNavSyllabus">03 // Syllabus</button>
+        <button class="nav-tab-btn active" id="tabNavSolver">01 // Solver & OCR</button>
+        <button class="nav-tab-btn" id="tabNavChat">02 // Doubt Chat</button>
+        <button class="nav-tab-btn" id="tabNavArena">03 // Arena Battle</button>
+        <button class="nav-tab-btn" id="tabNavBench">04 // GATE-CS-Bench</button>
         <button class="btn-ctrl" id="themeToggle">
           <span id="themeIcon">☀️</span>
           <span id="themeText">LIGHT</span>
-        </button>
-        <button class="btn-ctrl" id="audioToggle">
-          <span>AUDIO: OFF</span>
         </button>
       </nav>
     </header>
@@ -44,40 +42,59 @@
     <!-- Real-Time Metrics Strip -->
     <div class="metrics-strip">
       <div class="metric-item">
-        <span>DELTA:</span>
-        <span class="metric-val cyan">+70.6% (GATE 2023–24 Test)</span>
+        <span>GATE ACCURACY:</span>
+        <span class="metric-val cyan">+70.6% Held-Out Delta</span>
       </div>
       <div class="metric-item">
         <span>CPU SPEED:</span>
         <span class="metric-val emerald">52.8 tok/s</span>
       </div>
       <div class="metric-item">
-        <span>COMPRESSION:</span>
+        <span>QUANTIZATION:</span>
         <span class="metric-val amber">0.98 GB GGUF Q4_K_M</span>
       </div>
       <div class="metric-item">
         <span>PEDAGOGY:</span>
         <span class="metric-val white">100% 4-Phase CoT</span>
       </div>
+      <div class="metric-item">
+        <span>REWARD:</span>
+        <span class="metric-val purple">GRPO / Verifiable RLVR</span>
+      </div>
     </div>
 
-    <!-- Main Workspace Window (Single Screen 100vh) -->
+    <!-- Main Workspace Window -->
     <main class="workspace-window">
       
-      <!-- Left Dock: Problem Input Console (Internal Scroll) -->
-      <aside class="dock-panel">
+      <!-- Left Dock: Problem Input Console -->
+      <aside class="dock-panel" id="dockPanel">
         
         <!-- Syllabus Domain Selector -->
         <div>
           <div class="dock-title">Syllabus Domain</div>
           <div class="subj-selector-grid" id="subjSelector">
-            <button class="subj-chip active" data-subj="Algorithms">Algorithms (15%)</button>
-            <button class="subj-chip" data-subj="Operating Systems">OS (10%)</button>
-            <button class="subj-chip" data-subj="DBMS">DBMS (9%)</button>
-            <button class="subj-chip" data-subj="Computer Networks">CN (11%)</button>
-            <button class="subj-chip" data-subj="Theory of Computation">TOC (9%)</button>
-            <button class="subj-chip" data-subj="Compiler Design">CD (5%)</button>
-            <button class="subj-chip" data-subj="Digital Logic">Digital Logic (6%)</button>
+            <button class="subj-chip active" data-subj="Algorithms">Algorithms</button>
+            <button class="subj-chip" data-subj="Operating Systems">OS</button>
+            <button class="subj-chip" data-subj="DBMS">DBMS</button>
+            <button class="subj-chip" data-subj="Computer Networks">CN</button>
+            <button class="subj-chip" data-subj="Theory of Computation">TOC</button>
+            <button class="subj-chip" data-subj="Compiler Design">CD</button>
+            <button class="subj-chip" data-subj="Digital Logic">Digital Logic</button>
+            <button class="subj-chip" data-subj="Computer Organization">COA</button>
+            <button class="subj-chip" data-subj="Engineering Mathematics">Engg Math</button>
+          </div>
+        </div>
+
+        <!-- Screenshot / Image OCR Dropzone -->
+        <div class="ocr-dropzone-container">
+          <div class="dock-title">📸 Image / Screenshot OCR (Paste Ctrl+V)</div>
+          <div class="ocr-dropzone" id="ocrDropzone">
+            <input type="file" id="ocrFileInput" accept="image/*" style="display: none;">
+            <div id="ocrPromptText">Drag & drop question screenshot, paste image, or <span class="browse-link" onclick="document.getElementById('ocrFileInput').click()">browse</span></div>
+            <div id="ocrPreviewContainer" style="display:none; margin-top: 6px;">
+              <img id="ocrPreviewImg" src="" alt="Question Preview" style="max-height: 80px; border-radius: 4px; border: 1px solid var(--border-color);">
+              <button class="btn-micro-clear" onclick="clearOcrImage()">Remove</button>
+            </div>
           </div>
         </div>
 
@@ -125,20 +142,22 @@
                 <option value="Theory of Computation">Theory of Computation</option>
                 <option value="Compiler Design">Compiler Design</option>
                 <option value="Digital Logic">Digital Logic</option>
+                <option value="Computer Organization">Computer Organization</option>
+                <option value="Engineering Mathematics">Engineering Mathematics</option>
               </select>
             </div>
             <div>
               <select id="typeInput">
-                <option value="MCQ">MCQ</option>
-                <option value="NAT">NAT</option>
-                <option value="MSQ">MSQ</option>
+                <option value="MCQ">MCQ (Single)</option>
+                <option value="MSQ">MSQ (Multi)</option>
+                <option value="NAT">NAT (Numerical)</option>
               </select>
             </div>
             <div>
               <input type="number" id="marksInput" value="2" min="1" max="2" placeholder="Marks">
             </div>
           </div>
-          <input type="text" id="topicInput" placeholder="Topic (e.g. Asymptotic Analysis / Paging TLB)" style="margin-top: 0.4rem;">
+          <input type="text" id="topicInput" placeholder="Topic (e.g. Paging TLB / Asymptotic Analysis)" style="margin-top: 0.4rem;">
         </div>
 
         <!-- Problem Formulation Textarea -->
@@ -178,39 +197,146 @@
 
       </aside>
 
-      <!-- Right Stage: Dynamic View Container (Internal Scroll) -->
+      <!-- Right Stage: Dynamic View Container -->
       <section class="stage-panel" id="mainStageArea">
         
         <!-- Live Telemetry HUD Bar -->
         <div class="stage-hud">
           <div class="stage-stats">
-            <div class="stage-stat-item">ENGINE: <span>CALYPSO-QWEN-1.5B</span></div>
+            <div class="stage-stat-item">ENGINE: <span id="stageEngine">CALYPSO-QWEN-1.5B</span></div>
             <div class="stage-stat-item">LATENCY: <span id="stageLatency">--</span></div>
             <div class="stage-stat-item">THROUGHPUT: <span id="stageTps">--</span></div>
             <div class="stage-stat-item">TOKENS: <span id="stageTokens">0</span></div>
           </div>
           <div class="stage-actions">
             <button class="btn-stage-action" onclick="copyTerminalMarkdown()">Copy Markdown</button>
+            <button class="btn-stage-action" onclick="openInteractivePythonRunner()">Python Sandbox</button>
             <button class="btn-stage-action" onclick="window.print()">Print Proof</button>
           </div>
         </div>
 
-        <!-- Derivation Terminal Card (REASONING TERMINAL // STEP-BY-STEP PROOF) -->
+        <!-- Main Content Area -->
         <div class="terminal-window" id="terminalOutputWindow">
-          <div style="color: var(--text-muted); text-align: center; margin-top: 80px;">
-            <div style="font-family: var(--font-hero); font-size: 1.35rem; font-weight: 900; color: var(--text-primary); margin-bottom: 0.5rem; letter-spacing: -0.02em;">
-              REASONING TERMINAL // STEP-BY-STEP PROOF
+          
+          <!-- Default View: Solver & Proof Terminal -->
+          <div id="solverTerminalView">
+            <div class="empty-state-hero" id="emptyStateMsg">
+              <div class="hero-title">REASONING TERMINAL // 4-PHASE PROOF</div>
+              <div class="hero-desc">
+                Select an exam preset, upload a screenshot, or type a custom GATE problem on the left dock. Calypso will synthesize the full rigorous mathematical proof with line-by-line LaTeX equations.
+              </div>
             </div>
-            <div style="font-size: 0.88rem; color: var(--text-secondary); max-width: 480px; margin: 0 auto; line-height: 1.6;">
-              Select an exam challenge preset on the left dock or formulate a custom problem. Calypso will synthesize the 4-phase mathematical proof with line-by-line LaTeX equations.
+            
+            <div id="proofPhasesContainer" style="display:none;"></div>
+          </div>
+
+          <!-- Multi-Turn Interactive Doubt Chat View -->
+          <div id="chatTerminalView" style="display:none;">
+            <div class="chat-history-container" id="chatHistoryBox">
+              <div class="chat-msg bot-msg">
+                <div class="chat-role-badge">CALYPSO MENTOR</div>
+                <div class="chat-text">Welcome to the interactive GATE CS doubt-solver. Ask any concept clarification, option elimination trap questions, or proof derivations below!</div>
+              </div>
+            </div>
+            <div class="chat-input-bar">
+              <input type="text" id="chatUserQuery" placeholder="Ask follow-up: e.g. Why does option C fail? Or explain the TLB hit ratio formula...">
+              <button class="btn-send-chat" id="chatSendBtn">Send ➔</button>
             </div>
           </div>
+
+          <!-- Arena Battle View -->
+          <div id="arenaTerminalView" style="display:none;">
+            <div class="arena-grid">
+              <div class="arena-card">
+                <div class="arena-badge base-badge">Base Model: Qwen2.5-1.5B</div>
+                <div class="arena-content" id="arenaBaseContent">Run Arena Battle to see baseline output...</div>
+              </div>
+              <div class="arena-card">
+                <div class="arena-badge ft-badge">Fine-Tuned: CALYPSO-1.5B (QLoRA + RLVR)</div>
+                <div class="arena-content" id="arenaFtContent">Run Arena Battle to see domain-specialized 4-phase proof...</div>
+              </div>
+            </div>
+            <button class="btn-solve-now" id="runArenaBtn" style="margin-top: 1rem;">Run Side-by-Side Arena Battle ⚡</button>
+          </div>
+
+          <!-- GATE-CS-Bench Leaderboard View -->
+          <div id="benchTerminalView" style="display:none;">
+            <div class="bench-hero-header">
+              <h3>🏆 GATE-CS-Bench Standardized Evaluation</h3>
+              <p>Rigorous zero-leakage evaluation against historical IIT PYQs (2023–2024 held-out temporal split).</p>
+            </div>
+            <div class="bench-stats-grid">
+              <div class="bench-stat-card">
+                <div class="bench-stat-num cyan">88.2%</div>
+                <div class="bench-stat-label">CALYPSO Pass@1</div>
+              </div>
+              <div class="bench-stat-card">
+                <div class="bench-stat-num amber">17.6%</div>
+                <div class="bench-stat-label">Base Model Pass@1</div>
+              </div>
+              <div class="bench-stat-card">
+                <div class="bench-stat-num emerald">+70.6%</div>
+                <div class="bench-stat-label">Accuracy Delta</div>
+              </div>
+              <div class="bench-stat-card">
+                <div class="bench-stat-num white">100.0%</div>
+                <div class="bench-stat-label">CoT Compliance</div>
+              </div>
+            </div>
+            <div class="bench-table-container" id="benchTableContainer">
+              <table class="bench-table">
+                <thead>
+                  <tr>
+                    <th>Subject Area</th>
+                    <th>Base Qwen-1.5B</th>
+                    <th>CALYPSO-1.5B</th>
+                    <th>Gain Delta</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Algorithms & Data Structures</td><td>20.0%</td><td><strong>92.0%</strong></td><td><span class="gain-badge">+72.0%</span></td></tr>
+                  <tr><td>Operating Systems</td><td>16.7%</td><td><strong>88.9%</strong></td><td><span class="gain-badge">+72.2%</span></td></tr>
+                  <tr><td>Database Management (DBMS)</td><td>14.3%</td><td><strong>85.7%</strong></td><td><span class="gain-badge">+71.4%</span></td></tr>
+                  <tr><td>Computer Networks</td><td>18.2%</td><td><strong>86.4%</strong></td><td><span class="gain-badge">+68.2%</span></td></tr>
+                  <tr><td>Theory of Computation (TOC)</td><td>22.2%</td><td><strong>88.9%</strong></td><td><span class="gain-badge">+66.7%</span></td></tr>
+                  <tr><td>Compiler Design</td><td>12.5%</td><td><strong>87.5%</strong></td><td><span class="gain-badge">+75.0%</span></td></tr>
+                  <tr><td>Digital Logic & COA</td><td>20.0%</td><td><strong>90.0%</strong></td><td><span class="gain-badge">+70.0%</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
 
       </section>
 
     </main>
 
+  </div>
+
+  <!-- Modal for Python Sandbox Tool Runner -->
+  <div class="modal-backdrop" id="pythonModal" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title">🐍 Sandboxed Python Math Executor</div>
+        <button class="btn-close-modal" onclick="closeInteractivePythonRunner()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+          Run deterministic computations, discrete combinatorics, and matrix calculations in a safe sandbox.
+        </p>
+        <textarea id="sandboxPythonCode" class="sandbox-textarea" rows="6"># Compute EMAT with 2-level paging and TLB
+h = 0.90
+t_tlb = 10
+t_mem = 100
+
+emat = h * (t_tlb + t_mem) + (1 - h) * (t_tlb + 2 * t_mem)
+print(f"Effective Memory Access Time (EMAT): {emat:.2f} ns")
+</textarea>
+        <button class="btn-solve-now" id="executePythonBtn" style="margin-top: 0.5rem;">Execute Python ➔</button>
+        <div class="sandbox-output" id="sandboxPythonOutput" style="display:none; margin-top: 0.5rem;"></div>
+      </div>
+    </div>
   </div>
 
   <script src="app.js"></script>

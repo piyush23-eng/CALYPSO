@@ -1,656 +1,423 @@
 /**
- * ==========================================================================
- * CALYPSO — UNIFIED SINGLE-WINDOW SCREEN WORKSPACE
- * Dual-Theme Engine, Live Solver Streamer, Battle Arena & Syllabus Matrix
- * ==========================================================================
+ * CALYPSO 2.0 Client Application
+ * Features: 4-Phase CoT Rendering, KaTeX Math, OCR Ingestion, Multi-Turn Chat, Python Sandbox.
  */
 
+// State
+let activeTab = "solver";
+let currentOcrBase64 = null;
+let chatMessages = [];
+let isGenerating = false;
+
+// Presets Dictionary
 const PRESETS = {
   algo_recurrence: {
     subject: "Algorithms",
-    topic: "Asymptotic Analysis & Recurrences",
-    question_type: "MCQ",
-    marks: 1,
-    question: "Consider the recurrence relation:\n$T(n) = 2T(\\lfloor\\sqrt{n}\\rfloor) + \\log_2 n$\nfor $n > 2$, where $T(2) = 1$. Which one of the following is the asymptotic order of $T(n)$?",
+    topic: "Asymptotic Analysis",
+    type: "MCQ",
+    marks: 2,
+    question: "Consider the recurrence relation $T(n) = 2T(\\lfloor\\sqrt{n}\\rfloor) + \\log_2 n$ with $T(2) = 1$. What is the asymptotic order of $T(n)$?",
     options: {
-      A: "$\\Theta(\\log_2 n)$",
-      B: "$\\Theta((\\log_2 n) \\log_2 \\log_2 n)$",
+      A: "$\\Theta((\\log_2 n) \\cdot (\\log_2 \\log_2 n))$",
+      B: "$\\Theta(\\log_2 n)$",
       C: "$\\Theta((\\log_2 n)^2)$",
-      D: "$\\Theta(n)$",
+      D: "$\\Theta(n \\log_2 n)$",
     },
   },
   os_paging: {
     subject: "Operating Systems",
-    topic: "Virtual Memory & TLB",
-    question_type: "NAT",
+    topic: "Virtual Memory & Paging",
+    type: "NAT",
     marks: 2,
-    question: "A computer system uses a 2-level page table. Virtual addresses are 32 bits, page size is 4 KB, and each page table entry is 4 bytes. If the TLB hit ratio is 0.90, TLB access time is 10 ns, and main memory access time is 80 ns, what is the Effective Memory Access Time (EMAT) in nanoseconds?",
+    question: "A system uses 2-level paging. Main memory access time is $100\\text{ ns}$ and TLB access time is $10\\text{ ns}$. If the TLB hit ratio is $90\\%$, and on a TLB miss, all page table levels are in main memory, what is the Effective Memory Access Time (EMAT) in nanoseconds?",
     options: {},
   },
   dbms_norm: {
     subject: "DBMS",
-    topic: "Functional Dependencies & Normal Forms",
-    question_type: "MCQ",
+    topic: "Relational Normalization",
+    type: "MCQ",
     marks: 2,
-    question: "Consider relation R(A, B, C, D, E) with FDs:\nF = { A -> BC, CD -> E, B -> D, E -> A }\nWhich one of the following is the highest normal form satisfied by relation R?",
+    question: "Given a relation $R(A, B, C, D)$ with functional dependencies $FD = \\{AB \\rightarrow C, C \\rightarrow D, D \\rightarrow A\\}$. What is the highest normal form satisfied by $R$?",
     options: {
-      A: "1NF but not 2NF",
-      B: "2NF but not 3NF",
-      C: "3NF but not BCNF",
-      D: "BCNF",
+      A: "3NF but not BCNF",
+      B: "BCNF",
+      C: "2NF but not 3NF",
+      D: "1NF only",
     },
   },
   cn_subnet: {
     subject: "Computer Networks",
-    topic: "IP Subnetting & CIDR",
-    question_type: "NAT",
+    topic: "IPv4 Subnetting",
+    type: "MCQ",
     marks: 2,
-    question: "An organization is allocated the IP block 200.10.16.0/20. The network administrator needs to create 8 subnets with equal number of usable host IP addresses. What is the number of usable host IP addresses in EACH subnet?",
-    options: {},
+    question: "An ISP assigns the block $200.10.0.0/16$ to an organization. The organization wants to create subnets having up to 60 usable hosts each. What is the maximum number of such subnets that can be formed and what is the subnet mask?",
+    options: {
+      A: "$1024$ subnets with mask $255.255.255.192$",
+      B: "$1024$ subnets with mask $255.255.255.128$",
+      C: "$512$ subnets with mask $255.255.255.192$",
+      D: "$2048$ subnets with mask $255.255.255.224$",
+    },
   },
   toc_decide: {
     subject: "Theory of Computation",
-    topic: "Decidability & Grammars",
-    question_type: "MCQ",
-    marks: 1,
-    question: "Which of the following problems is UNDECIDABLE?",
+    topic: "Decidability & CFGs",
+    type: "MSQ",
+    marks: 2,
+    question: "Which of the following decision problems are UNDECIDABLE for Context-Free Grammars (CFGs)?",
     options: {
-      A: "Checking whether a given Regular Expression $R$ generates the empty language $\\emptyset$.",
-      B: "Checking whether a given Context-Free Grammar $G$ generates an empty language $L(G) = \\emptyset$.",
-      C: "Checking whether a given Context-Free Grammar $G$ is ambiguous.",
-      D: "Checking whether two DFAs $M_1$ and $M_2$ are equivalent.",
+      A: "Is $L(G) = \\Sigma^*$ (Universality)?",
+      B: "Is $L(G_1) \\cap L(G_2) = \\emptyset$ (Disjointness)?",
+      C: "Is $L(G) = \\emptyset$ (Emptiness)?",
+      D: "Is $G$ ambiguous?",
     },
   },
   cd_lalr: {
     subject: "Compiler Design",
-    topic: "Syntax Analysis - LR Parsers",
-    question_type: "MCQ",
-    marks: 1,
-    question: "Consider an LR(1) parser. An LALR(1) parser is constructed by merging states of the LR(1) parser having the same core item sets. Which one of the following statements is TRUE regarding the conflicts that can arise during this merger?",
+    topic: "Bottom-Up Parsing",
+    type: "MCQ",
+    marks: 2,
+    question: "When constructing an LALR(1) parser by merging LR(1) states with identical cores, which type of parsing conflict can potentially be introduced?",
     options: {
-      A: "Merging states can introduce Shift-Reduce (S-R) conflicts but never Reduce-Reduce (R-R) conflicts.",
-      B: "Merging states can introduce Reduce-Reduce (R-R) conflicts but never Shift-Reduce (S-R) conflicts.",
-      C: "Merging states can introduce both Shift-Reduce and Reduce-Reduce conflicts.",
-      D: "Merging states can never introduce any new conflict.",
+      A: "Reduce-Reduce (RR) conflict only",
+      B: "Shift-Reduce (SR) conflict only",
+      C: "Both Shift-Reduce and Reduce-Reduce conflicts",
+      D: "Neither SR nor RR conflict",
     },
   },
 };
 
-const ARENA_CASES = {
-  case_os: {
-    title: "⚡ OS: 2-Level Paging EMAT",
-    presetKey: "os_paging",
-    baseFailure: "Omitted 1 memory access for physical frame (calculated 98 ns instead of 96 ns).",
-    calypsoAdvantage: "Enforces memory traversal accounting: $t_{tlb} + 3 \\times t_m = 250\\text{ ns} \\implies \\text{EMAT} = 96\\text{ ns}$.",
-  },
-  case_cn: {
-    title: "⚡ CN: Subnet Usable Hosts",
-    presetKey: "cn_subnet",
-    baseFailure: "Calculated total subnet capacity ($2^9 = 512$) but omitted subtracting Network & Broadcast IDs ($2^h - 2$).",
-    calypsoAdvantage: "Boundary validator enforces $512 - 2 = 510$ usable host IPs.",
-  },
-  case_cd: {
-    title: "⚡ CD: LALR State Invariance",
-    presetKey: "cd_lalr",
-    baseFailure: "Conflated parser rules with grammar conflicts, claiming Shift-Reduce conflicts can emerge from identical cores.",
-    calypsoAdvantage: "Proves lookahead core invariance, identifying Option (B) [Reduce-Reduce conflicts only].",
-  },
-  case_toc: {
-    title: "⚡ TOC: CFG Undecidability",
-    presetKey: "toc_decide",
-    baseFailure: "Generated unstructured summary without formal Post Correspondence Problem (PCP) reduction.",
-    calypsoAdvantage: "Formally proves reduction from PCP to Context-Free Grammar ambiguity undecidability.",
-  },
-};
-
-const SYLLABUS_MATRIX = [
-  { subject: "Algorithms", weight: "15%", tier: "Tier 1 (High Yield)", focus: "Asymptotic bounds, Dynamic Programming (LCS), Graphs (MST/Dijkstra), Recurrences" },
-  { subject: "Computer Networks", weight: "11%", tier: "Tier 1 (High Yield)", focus: "Sliding Window (GBN/SR), CIDR Subnetting, TCP Congestion Control, Routing" },
-  { subject: "Operating Systems", weight: "10%", tier: "Tier 1 (High Yield)", focus: "Multi-level Paging, CPU Scheduling, Banker's Safety, Semaphore Deadlocks" },
-  { subject: "DBMS", weight: "9%", tier: "Tier 2", focus: "Normalization (BCNF/3NF), Relational Algebra, B+ Trees, Conflict Serializability" },
-  { subject: "Theory of Computation", weight: "9%", tier: "Tier 2", focus: "Chomsky Hierarchy, DFA Minimization, Turing Decidability, Rice's Theorem" },
-  { subject: "Digital Logic", weight: "6%", tier: "Tier 3", focus: "K-Map Minimization, Carry Lookahead Adders, Multiplexers, Synchronous Counters" },
-  { subject: "Compiler Design", weight: "5%", tier: "Tier 3", focus: "LR(1)/LALR(1) Parsing, SDT synthesized attributes, Lexical Tokens, Dominators" },
-];
-
-let currentTheme = localStorage.getItem("calypso_theme") || "dark";
-let activeMode = "solver"; // 'solver', 'arena', 'syllabus'
-let audioEnabled = false;
-let audioCtx = null;
-let latestTerminalMarkdown = "";
-let isTerminalSolving = false;
-let currentArenaCase = "case_os";
-
+// DOM Elements
 document.addEventListener("DOMContentLoaded", () => {
+  initTabs();
   initTheme();
-  initAudio();
-  initNavigation();
+  initPresets();
+  initOcrDropzone();
   initSolver();
-  loadSolverPreset("algo_recurrence");
+  initChat();
+  initArena();
+  initPythonSandbox();
 });
 
-/* --------------------------------------------------------------------------
-   0. Theme Engine
-   -------------------------------------------------------------------------- */
-function initTheme() {
-  applyTheme(currentTheme);
+// 1. Tab Navigation
+function initTabs() {
+  const tabs = [
+    { btn: "tabNavSolver", view: "solverTerminalView", name: "solver" },
+    { btn: "tabNavChat", view: "chatTerminalView", name: "chat" },
+    { btn: "tabNavArena", view: "arenaTerminalView", name: "arena" },
+    { btn: "tabNavBench", view: "benchTerminalView", name: "bench" },
+  ];
 
-  const toggle = document.getElementById("themeToggle");
-  if (toggle) {
-    toggle.addEventListener("click", () => {
-      currentTheme = currentTheme === "dark" ? "light" : "dark";
-      localStorage.setItem("calypso_theme", currentTheme);
-      applyTheme(currentTheme);
-      playTone(700, 0.05);
+  tabs.forEach(({ btn, view, name }) => {
+    const el = document.getElementById(btn);
+    if (!el) return;
+    el.addEventListener("click", () => {
+      tabs.forEach((t) => {
+        document.getElementById(t.btn)?.classList.remove("active");
+        const v = document.getElementById(t.view);
+        if (v) v.style.display = "none";
+      });
+      el.classList.add("active");
+      const currentView = document.getElementById(view);
+      if (currentView) currentView.style.display = "block";
+      activeTab = name;
     });
-  }
+  });
 }
 
-function applyTheme(theme) {
-  document.documentElement.setAttribute("data-theme", theme);
+// 2. Theme Toggle
+function initTheme() {
+  const btn = document.getElementById("themeToggle");
   const icon = document.getElementById("themeIcon");
   const text = document.getElementById("themeText");
-  if (icon && text) {
-    if (theme === "dark") {
-      icon.textContent = "☀️";
-      text.textContent = "LIGHT";
-    } else {
-      icon.textContent = "🌙";
-      text.textContent = "DARK";
-    }
-  }
-}
 
-/* --------------------------------------------------------------------------
-   1. Audio Synthesizer
-   -------------------------------------------------------------------------- */
-function initAudio() {
-  const toggle = document.getElementById("audioToggle");
-  if (!toggle) return;
-
-  toggle.addEventListener("click", () => {
-    audioEnabled = !audioEnabled;
-    toggle.classList.toggle("on", audioEnabled);
-    toggle.innerHTML = `<span>AUDIO: ${audioEnabled ? "ON" : "OFF"}</span>`;
-
-    if (audioEnabled && !audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    playTone(audioEnabled ? 880 : 330, 0.08);
+  btn?.addEventListener("click", () => {
+    const isLight = document.body.classList.toggle("theme-light");
+    if (icon) icon.textContent = isLight ? "🌙" : "☀️";
+    if (text) text.textContent = isLight ? "DARK" : "LIGHT";
   });
 }
 
-function playTone(freq = 600, duration = 0.05) {
-  if (!audioEnabled || !audioCtx) return;
-  try {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = "sine";
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
-  } catch (e) {}
-}
-
-/* --------------------------------------------------------------------------
-   2. Mode Navigation & Workspace View Switching (Single Window)
-   -------------------------------------------------------------------------- */
-function initNavigation() {
-  const btnSolver = document.getElementById("tabNavSolver");
-  const btnArena = document.getElementById("tabNavArena");
-  const btnSyllabus = document.getElementById("tabNavSyllabus");
-
-  btnSolver.addEventListener("click", () => {
-    activeMode = "solver";
-    setTabActive(btnSolver);
-    renderSolverStage();
-    playTone(550, 0.03);
-  });
-
-  btnArena.addEventListener("click", () => {
-    activeMode = "arena";
-    setTabActive(btnArena);
-    renderArenaStage(currentArenaCase);
-    playTone(550, 0.03);
-  });
-
-  btnSyllabus.addEventListener("click", () => {
-    activeMode = "syllabus";
-    setTabActive(btnSyllabus);
-    renderSyllabusStage();
-    playTone(550, 0.03);
-  });
-}
-
-function setTabActive(el) {
-  document.querySelectorAll(".nav-tab-btn").forEach((t) => t.classList.remove("active"));
-  el.classList.add("active");
-}
-
-/* --------------------------------------------------------------------------
-   3. Solver Terminal Stage
-   -------------------------------------------------------------------------- */
-function initSolver() {
+// 3. Presets & Domain Selector
+function initPresets() {
   document.querySelectorAll(".subj-chip").forEach((chip) => {
     chip.addEventListener("click", () => {
       document.querySelectorAll(".subj-chip").forEach((c) => c.classList.remove("active"));
       chip.classList.add("active");
       const subj = chip.getAttribute("data-subj");
-      document.getElementById("subjectInput").value = subj;
-      playTone(500, 0.03);
+      const sel = document.getElementById("subjectInput");
+      if (sel && subj) sel.value = subj;
     });
   });
 
   document.querySelectorAll(".preset-btn-card").forEach((card) => {
     card.addEventListener("click", () => {
       const key = card.getAttribute("data-preset");
-      if (PRESETS[key]) {
-        loadSolverPreset(key);
-        playTone(650, 0.04);
-      }
+      const p = PRESETS[key];
+      if (!p) return;
+
+      document.getElementById("subjectInput").value = p.subject;
+      document.getElementById("topicInput").value = p.topic;
+      document.getElementById("typeInput").value = p.type;
+      document.getElementById("marksInput").value = p.marks;
+      document.getElementById("questionTextInput").value = p.question;
+
+      document.getElementById("optionA").value = p.options.A || "";
+      document.getElementById("optionB").value = p.options.B || "";
+      document.getElementById("optionC").value = p.options.C || "";
+      document.getElementById("optionD").value = p.options.D || "";
+
+      // Select corresponding chip
+      document.querySelectorAll(".subj-chip").forEach((c) => {
+        if (c.getAttribute("data-subj") === p.subject) c.classList.add("active");
+        else c.classList.remove("active");
+      });
     });
   });
+}
 
-  document.getElementById("typeInput").addEventListener("change", (e) => {
-    const isMcq = e.target.value === "MCQ" || e.target.value === "MSQ";
-    document.getElementById("optionsConsole").style.display = isMcq ? "block" : "none";
+// 4. Screenshot / Image OCR
+function initOcrDropzone() {
+  const dropzone = document.getElementById("ocrDropzone");
+  const fileInput = document.getElementById("ocrFileInput");
+
+  fileInput?.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) handleImageFile(file);
   });
 
-  document.getElementById("solveTerminalBtn").addEventListener("click", runTerminalSolve);
-}
-
-function loadSolverPreset(key) {
-  const p = PRESETS[key];
-  if (!p) return;
-
-  document.getElementById("subjectInput").value = p.subject;
-  document.getElementById("topicInput").value = p.topic;
-  document.getElementById("typeInput").value = p.question_type;
-  document.getElementById("marksInput").value = p.marks;
-  document.getElementById("questionTextInput").value = p.question;
-
-  document.querySelectorAll(".subj-chip").forEach((chip) => {
-    chip.classList.toggle("active", chip.getAttribute("data-subj") === p.subject);
+  dropzone?.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropzone.classList.add("drag-over");
   });
 
-  const isMcq = p.question_type === "MCQ" || p.question_type === "MSQ";
-  document.getElementById("optionsConsole").style.display = isMcq ? "block" : "none";
+  dropzone?.addEventListener("dragleave", () => {
+    dropzone.classList.remove("drag-over");
+  });
 
-  if (isMcq && p.options) {
-    document.getElementById("optionA").value = p.options.A || "";
-    document.getElementById("optionB").value = p.options.B || "";
-    document.getElementById("optionC").value = p.options.C || "";
-    document.getElementById("optionD").value = p.options.D || "";
-  }
-}
+  dropzone?.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropzone.classList.remove("drag-over");
+    if (e.dataTransfer.files.length > 0) {
+      handleImageFile(e.dataTransfer.files[0]);
+    }
+  });
 
-function renderSolverStage() {
-  const stage = document.getElementById("mainStageArea");
-  stage.innerHTML = `
-    <div class="stage-hud">
-      <div class="stage-stats">
-        <div class="stage-stat-item">ENGINE: <span>CALYPSO-QWEN-1.5B</span></div>
-        <div class="stage-stat-item">LATENCY: <span id="stageLatency">--</span></div>
-        <div class="stage-stat-item">THROUGHPUT: <span id="stageTps">--</span></div>
-        <div class="stage-stat-item">TOKENS: <span id="stageTokens">0</span></div>
-      </div>
-      <div class="stage-actions">
-        <button class="btn-stage-action" onclick="copyTerminalMarkdown()">Copy Markdown</button>
-        <button class="btn-stage-action" onclick="window.print()">Print Proof</button>
-      </div>
-    </div>
-
-    <div class="terminal-window" id="terminalOutputWindow">
-      ${
-        latestTerminalMarkdown
-          ? formatMarkdown(latestTerminalMarkdown)
-          : `<div style="color: var(--text-muted); text-align: center; margin-top: 80px;">
-              <div style="font-family: var(--font-hero); font-size: 1.35rem; font-weight: 900; color: var(--text-primary); margin-bottom: 0.5rem; letter-spacing: -0.02em;">
-                REASONING TERMINAL // STEP-BY-STEP PROOF
-              </div>
-              <div style="font-size: 0.88rem; color: var(--text-secondary); max-width: 480px; margin: 0 auto; line-height: 1.6;">
-                Click <strong>Synthesize Mathematical Proof</strong> on the left to stream the 4-phase pedagogical derivation with LaTeX formatting.
-              </div>
-            </div>`
-      }
-    </div>
-  `;
-  renderKaTeX();
-}
-
-function getSolverData() {
-  const subject = document.getElementById("subjectInput").value;
-  const topic = document.getElementById("topicInput").value || "General";
-  const question_type = document.getElementById("typeInput").value;
-  const marks = parseInt(document.getElementById("marksInput").value) || 1;
-  const question = document.getElementById("questionTextInput").value.trim();
-
-  const options = {};
-  if (question_type === "MCQ" || question_type === "MSQ") {
-    const a = document.getElementById("optionA").value.trim();
-    const b = document.getElementById("optionB").value.trim();
-    const c = document.getElementById("optionC").value.trim();
-    const d = document.getElementById("optionD").value.trim();
-    if (a) options.A = a;
-    if (b) options.B = b;
-    if (c) options.C = c;
-    if (d) options.D = d;
-  }
-
-  return { subject, topic, question_type, marks, question, options };
-}
-
-async function runTerminalSolve() {
-  if (isTerminalSolving) return;
-  const data = getSolverData();
-  if (!data.question) {
-    alert("Please formulate or select a GATE CS problem.");
-    return;
-  }
-
-  if (activeMode !== "solver") {
-    activeMode = "solver";
-    setTabActive(document.getElementById("tabNavSolver"));
-    renderSolverStage();
-  }
-
-  isTerminalSolving = true;
-  playTone(850, 0.08);
-
-  const solveBtn = document.getElementById("solveTerminalBtn");
-  solveBtn.disabled = true;
-  solveBtn.innerHTML = `<span>Synthesizing Proof...</span>`;
-
-  const termWindow = document.getElementById("terminalOutputWindow");
-  const termLatency = document.getElementById("stageLatency");
-  const termTps = document.getElementById("stageTps");
-  const termTokens = document.getElementById("stageTokens");
-
-  termWindow.innerHTML = `<span class="cursor-live"></span>`;
-  
-  const startTime = performance.now();
-  let fullOutput = "";
-  let tokenCount = 0;
-
-  try {
-    const response = await fetch("/api/solve/stream", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...data, model_type: "finetuned" }),
-    });
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value);
-      const lines = chunk.split("\n");
-
-      for (const line of lines) {
-        if (line.startsWith("data: ")) {
-          const raw = line.replace("data: ", "").trim();
-          if (raw === "[DONE]") break;
-          try {
-            const parsed = JSON.parse(raw);
-            if (parsed.token) {
-              fullOutput += parsed.token;
-              tokenCount++;
-              termWindow.innerHTML = formatMarkdown(fullOutput) + `<span class="cursor-live"></span>`;
-              if (termTokens) termTokens.textContent = tokenCount;
-            }
-          } catch (e) {}
+  // Global Clipboard Paste (Ctrl+V / Cmd+V)
+  window.addEventListener("paste", (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf("image") !== -1) {
+        const file = items[i].getAsFile();
+        if (file) {
+          handleImageFile(file);
+          break;
         }
       }
     }
-
-    const elapsed = (performance.now() - startTime) / 1000;
-    if (termLatency) termLatency.textContent = `${(elapsed * 1000).toFixed(0)} ms`;
-    if (termTps) termTps.textContent = `${(tokenCount / elapsed).toFixed(1)} tok/s`;
-    latestTerminalMarkdown = fullOutput;
-    termWindow.innerHTML = formatMarkdown(fullOutput);
-    renderKaTeX();
-  } catch (err) {
-    termWindow.innerHTML = `<div style="color:var(--neon-rose)">Terminal error: ${err.message}</div>`;
-  }
-
-  isTerminalSolving = false;
-  solveBtn.disabled = false;
-  solveBtn.innerHTML = `<span>Synthesize Mathematical Proof</span> ⚡`;
+  });
 }
 
-/* --------------------------------------------------------------------------
-   4. The Arena Battle Stage (Under One Window)
-   -------------------------------------------------------------------------- */
-function renderArenaStage(caseKey = "case_os") {
-  const stage = document.getElementById("mainStageArea");
-  const c = ARENA_CASES[caseKey];
-  if (c && c.presetKey) {
-    loadSolverPreset(c.presetKey);
-  }
+function handleImageFile(file) {
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    currentOcrBase64 = e.target.result;
+    const preview = document.getElementById("ocrPreviewImg");
+    const container = document.getElementById("ocrPreviewContainer");
+    const promptText = document.getElementById("ocrPromptText");
+    if (preview && container && promptText) {
+      preview.src = currentOcrBase64;
+      container.style.display = "block";
+      promptText.style.display = "none";
+    }
 
-  let pillsHtml = "";
-  for (let k of Object.keys(ARENA_CASES)) {
-    const item = ARENA_CASES[k];
-    const isAct = k === caseKey ? "active" : "";
-    pillsHtml += `<button class="subj-chip ${isAct}" onclick="switchArenaChallenge('${k}')">${item.title}</button>`;
-  }
-
-  stage.innerHTML = `
-    <div class="stage-hud">
-      <div style="display: flex; gap: 0.5rem; align-items: center;">
-        <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-secondary); font-weight: 700;">CHALLENGE:</span>
-        ${pillsHtml}
-      </div>
-      <button class="btn-stage-action" style="background: var(--neon-cyan); color: #000; font-weight: 800; border-color: var(--neon-cyan);" onclick="executeArenaBattle()">
-        RUN ARENA BATTLE ⚡
-      </button>
-    </div>
-
-    <div class="arena-split-grid">
-      <!-- Left: Base Model Box -->
-      <div class="arena-box">
-        <div class="arena-box-header">
-          <div class="arena-model-name">
-            <span>Qwen2.5-1.5B</span>
-            <span class="badge-base-box">Base Baseline</span>
-          </div>
-          <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-secondary);" id="baseMetricsArena">Awaiting Battle</span>
-        </div>
-        <div class="arena-body" id="baseArenaContent">
-          <p style="color: var(--text-secondary); margin-bottom: 0.75rem;">
-            Click <strong>RUN ARENA BATTLE</strong> to execute the baseline forward pass.
-          </p>
-          <div class="failure-callout">
-            <strong>Observed Trap:</strong> ${c.baseFailure}
-          </div>
-        </div>
-      </div>
-
-      <!-- Right: Calypso Engine Box -->
-      <div class="arena-box calypso-box">
-        <div class="arena-box-header">
-          <div class="arena-model-name">
-            <span style="color: var(--neon-cyan);">CALYPSO-QWEN-1.5B</span>
-            <span class="badge-calypso-box">Fine-Tuned</span>
-          </div>
-          <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--neon-cyan);" id="ftMetricsArena">Awaiting Battle</span>
-        </div>
-        <div class="arena-body" id="ftArenaContent">
-          <p style="color: var(--text-secondary); margin-bottom: 0.75rem;">
-            Calypso enforces 4-phase pedagogical CoT derivations.
-          </p>
-          <div class="success-callout">
-            <strong>Domain Advantage:</strong> ${c.calypsoAdvantage}
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-  renderKaTeX();
+    // Auto-extract question parameters from image
+    try {
+      const resp = await fetch("/api/solve/image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image_data: currentOcrBase64 }),
+      });
+      const data = await resp.json();
+      if (data.extracted_data) {
+        const ext = data.extracted_data;
+        if (ext.question) document.getElementById("questionTextInput").value = ext.question;
+        if (ext.subject) document.getElementById("subjectInput").value = ext.subject;
+        if (ext.question_type) document.getElementById("typeInput").value = ext.question_type;
+        if (ext.options) {
+          document.getElementById("optionA").value = ext.options.A || "";
+          document.getElementById("optionB").value = ext.options.B || "";
+          document.getElementById("optionC").value = ext.options.C || "";
+          document.getElementById("optionD").value = ext.options.D || "";
+        }
+      }
+    } catch (err) {
+      console.log("OCR direct preview loaded.");
+    }
+  };
+  reader.readAsDataURL(file);
 }
 
-function switchArenaChallenge(k) {
-  currentArenaCase = k;
-  renderArenaStage(k);
-  playTone(500, 0.03);
+function clearOcrImage() {
+  currentOcrBase64 = null;
+  const preview = document.getElementById("ocrPreviewImg");
+  const container = document.getElementById("ocrPreviewContainer");
+  const promptText = document.getElementById("ocrPromptText");
+  const fileInput = document.getElementById("ocrFileInput");
+  if (preview) preview.src = "";
+  if (container) container.style.display = "none";
+  if (promptText) promptText.style.display = "block";
+  if (fileInput) fileInput.value = "";
 }
 
-async function executeArenaBattle() {
-  playTone(800, 0.08);
-  const data = getSolverData();
-  const c = ARENA_CASES[currentArenaCase];
+// 5. Reasoning Solver
+function initSolver() {
+  const btn = document.getElementById("solveTerminalBtn");
+  btn?.addEventListener("click", () => runSolverSynthesis());
+}
 
-  const baseContent = document.getElementById("baseArenaContent");
-  const ftContent = document.getElementById("ftArenaContent");
-  const baseMetrics = document.getElementById("baseMetricsArena");
-  const ftMetrics = document.getElementById("ftMetricsArena");
+async function runSolverSynthesis() {
+  if (isGenerating) return;
 
-  if (!baseContent || !ftContent) return;
+  const subject = document.getElementById("subjectInput").value;
+  const topic = document.getElementById("topicInput").value || "General";
+  const questionType = document.getElementById("typeInput").value;
+  const marks = parseInt(document.getElementById("marksInput").value) || 2;
+  const question = document.getElementById("questionTextInput").value.trim();
 
-  baseMetrics.textContent = "Synthesizing...";
-  ftMetrics.textContent = "Synthesizing...";
-  baseContent.innerHTML = `<span class="cursor-live"></span> Running baseline forward pass...`;
-  ftContent.innerHTML = `<span class="cursor-live"></span> Deriving Calypso domain proof...`;
+  const options = {};
+  const optA = document.getElementById("optionA").value.trim();
+  const optB = document.getElementById("optionB").value.trim();
+  const optC = document.getElementById("optionC").value.trim();
+  const optD = document.getElementById("optionD").value.trim();
+  if (optA) options["A"] = optA;
+  if (optB) options["B"] = optB;
+  if (optC) options["C"] = optC;
+  if (optD) options["D"] = optD;
+
+  if (!question && !currentOcrBase64) {
+    alert("Please enter a question or upload a question image.");
+    return;
+  }
+
+  isGenerating = true;
+  const emptyState = document.getElementById("emptyStateMsg");
+  const phasesContainer = document.getElementById("proofPhasesContainer");
+  if (emptyState) emptyState.style.display = "none";
+  if (phasesContainer) {
+    phasesContainer.style.display = "block";
+    phasesContainer.innerHTML = '<div class="loading-spinner">⚡ Synthesizing 4-Phase Mathematical Proof via Calypso...</div>';
+  }
+
+  // Switch to solver view if on another tab
+  document.getElementById("tabNavSolver")?.click();
+
+  const startTime = performance.now();
 
   try {
-    const response = await fetch("/api/compare", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    const res = await response.json();
+    let resp, data;
+    if (currentOcrBase64 && !question) {
+      resp = await fetch("/api/solve/image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          image_data: currentOcrBase64,
+          subject: subject,
+          topic: topic,
+        }),
+      });
+      const imgData = await resp.json();
+      data = imgData.solution;
+    } else {
+      resp = await fetch("/api/solve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject,
+          topic,
+          question_type: questionType,
+          marks,
+          question,
+          options,
+          model_type: "finetuned",
+        }),
+      });
+      data = await resp.json();
+    }
 
-    baseMetrics.textContent = `${res.base_model_result.inference_latency_ms} ms • ${res.base_model_result.tokens_per_second} tok/s`;
-    ftMetrics.textContent = `${res.finetuned_model_result.inference_latency_ms} ms • ${res.finetuned_model_result.tokens_per_second} tok/s`;
+    // Update Telemetry HUD
+    document.getElementById("stageLatency").textContent = `${data.inference_latency_ms} ms`;
+    document.getElementById("stageTps").textContent = `${data.tokens_per_second} tok/s`;
+    document.getElementById("stageTokens").textContent = data.tokens_generated;
 
-    baseContent.innerHTML = `
-      <div>${formatMarkdown(res.base_model_result.solution_markdown)}</div>
-      <div class="failure-callout"><strong>Examiner Trap Analysis:</strong> ${c.baseFailure}</div>
-    `;
+    // Render 4-Phase Cards
+    renderStructuredPhases(data, question, subject, topic);
 
-    ftContent.innerHTML = `
-      <div>${formatMarkdown(res.finetuned_model_result.solution_markdown)}</div>
-      <div class="success-callout"><strong>Verified Domain Advantage:</strong> ${c.calypsoAdvantage}</div>
-    `;
+    // Add to chat history context
+    chatMessages = [
+      { role: "user", content: `Question (${subject} - ${topic}): ${question}` },
+      { role: "assistant", content: data.solution_markdown },
+    ];
 
-    renderKaTeX();
   } catch (err) {
-    baseContent.innerHTML = `<div style="color:var(--neon-rose)">Arena execution error: ${err.message}</div>`;
+    if (phasesContainer) {
+      phasesContainer.innerHTML = `<div class="error-msg">Error synthesizing proof: ${err.message}</div>`;
+    }
+  } finally {
+    isGenerating = false;
   }
 }
 
-/* --------------------------------------------------------------------------
-   5. Syllabus Stage (Under One Window)
-   -------------------------------------------------------------------------- */
-function renderSyllabusStage() {
-  const stage = document.getElementById("mainStageArea");
-  let cards = "";
+function renderStructuredPhases(data, question, subject, topic) {
+  const container = document.getElementById("proofPhasesContainer");
+  if (!container) return;
 
-  for (let s of SYLLABUS_MATRIX) {
-    cards += `
-      <div class="syllabus-mini-card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div style="font-weight: 900; font-family: var(--font-hero); font-size: 1.1rem; color: var(--text-primary);">${s.subject}</div>
-          <div style="font-family: var(--font-mono); font-weight: 800; font-size: 0.72rem; background: var(--accent-highlight-bg); color: var(--accent-highlight-text); padding: 0.15rem 0.45rem;">${s.weight}</div>
-        </div>
-        <div class="syllabus-tier">${s.tier}</div>
-        <div style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">${s.focus}</div>
+  const phases = data.structured_phases || {
+    phase1_concept: "Core principles and formal syllabus anchors.",
+    phase2_derivation: data.solution_markdown,
+    phase3_elimination: "Candidate option analysis.",
+    phase4_answer: data.extracted_answer || "Verified Answer.",
+  };
+
+  container.innerHTML = `
+    <div class="proof-card">
+      <div class="phase-header">
+        <span class="phase-num">PHASE 1</span>
+        <span class="phase-title">Conceptual Invariants & Core Principles</span>
       </div>
-    `;
-  }
-
-  stage.innerHTML = `
-    <div class="stage-hud">
-      <div class="stage-stat-item">CURRICULUM: <span>OFFICIAL IIT GATE CS 2024</span></div>
-      <div class="stage-stat-item">DOMAINS: <span>7 FOUNDATIONAL PILLARS</span></div>
+      <div class="phase-body markdown-render">${formatMarkdownContent(phases.phase1_concept)}</div>
     </div>
-    <div class="syllabus-grid-wrapper">
-      ${cards}
+
+    <div class="proof-card">
+      <div class="phase-header">
+        <span class="phase-num">PHASE 2</span>
+        <span class="phase-title">Step-by-Step Derivation & Calculations</span>
+      </div>
+      <div class="phase-body markdown-render">${formatMarkdownContent(phases.phase2_derivation)}</div>
+    </div>
+
+    <div class="proof-card">
+      <div class="phase-header">
+        <span class="phase-num">PHASE 3</span>
+        <span class="phase-title">Option Elimination & Trap Analysis</span>
+      </div>
+      <div class="phase-body markdown-render">${formatMarkdownContent(phases.phase3_elimination)}</div>
+    </div>
+
+    <div class="proof-card answer-card">
+      <div class="phase-header">
+        <span class="phase-num">PHASE 4</span>
+        <span class="phase-title">Verified GATE Answer</span>
+      </div>
+      <div class="phase-body markdown-render answer-highlight">
+        ${formatMarkdownContent(phases.phase4_answer)}
+      </div>
     </div>
   `;
-}
 
-/* --------------------------------------------------------------------------
-   6. Utilities: Markdown, LaTeX, Audio, Calculator
-   -------------------------------------------------------------------------- */
-function normalizeMathSymbols(rawText) {
-  if (!rawText) return "";
-  return rawText
-    // Convert bare textual/unwrapped words into formatted LaTeX formulas
-    .replace(/(?<![\\$a-zA-Z0-9])Theta(?![a-zA-Z0-9])/g, "$\\Theta$")
-    .replace(/(?<![\\$a-zA-Z0-9])theta(?![a-zA-Z0-9])/g, "$\\theta$")
-    .replace(/(?<![\\$a-zA-Z0-9])Omega(?![a-zA-Z0-9])/g, "$\\Omega$")
-    .replace(/(?<![\\$a-zA-Z0-9])omega(?![a-zA-Z0-9])/g, "$\\omega$")
-    .replace(/(?<![\\$a-zA-Z0-9])lambda(?![a-zA-Z0-9])/g, "$\\lambda$")
-    .replace(/(?<![\\$a-zA-Z0-9])epsilon(?![a-zA-Z0-9])/g, "$\\epsilon$")
-    .replace(/(?<![\\$a-zA-Z0-9])Sigma(?![a-zA-Z0-9])/g, "$\\Sigma$")
-    // Ensure bare LaTeX macro expressions outside of $...$ are wrapped in $
-    .replace(/(?<!\$)\\Theta\b/g, "$\\Theta$")
-    .replace(/(?<!\$)\\Omega\b/g, "$\\Omega$")
-    .replace(/(?<!\$)\\mathcal\{O\}\b/g, "$\\mathcal{O}$")
-    .replace(/(?<!\$)\\theta\b/g, "$\\theta$")
-    .replace(/(?<!\$)\\lambda\b/g, "$\\lambda$")
-    .replace(/(?<!\$)\\epsilon\b/g, "$\\epsilon$")
-    .replace(/(?<!\$)\\Sigma\b/g, "$\\Sigma$")
-    .replace(/(?<!\$)\\emptyset\b/g, "$\\emptyset$")
-    .replace(/(?<!\$)\\approx\b/g, "$\\approx$")
-    .replace(/(?<!\$)\\le\b/g, "$\\le$")
-    .replace(/(?<!\$)\\ge\b/g, "$\\ge$")
-    .replace(/(?<!\$)\\neq\b/g, "$\\neq$")
-    .replace(/(?<!\$)\\times\b/g, "$\\times$")
-    .replace(/(?<!\$)\\rightarrow\b/g, "$\\rightarrow$")
-    .replace(/(?<!\$)\\iff\b/g, "$\\iff$")
-    .replace(/(?<!\$)\\subseteq\b/g, "$\\subseteq$")
-    .replace(/(?<!\$)\\in\b/g, "$\\in$");
-}
-
-function formatMarkdown(text) {
-  if (!text) return "";
-
-  // Normalize mathematical symbol references so they display as real glyphs
-  const normalized = normalizeMathSymbols(text);
-
-  // Split at Section 4 if present to wrap the entire answer block cleanly
-  let parts = normalized.split(/### 4\. Final Answer/i);
-  let mainBody = parts[0];
-  let finalAns = parts.length > 1 ? parts[1] : "";
-
-  let html = mainBody
-    .replace(/^### (.*$)/gim, "<h3>$1</h3>")
-    .replace(/^## (.*$)/gim, "<h3>$1</h3>")
-    .replace(/^\- (.*$)/gim, "<li>$1</li>")
-    .replace(/\*\*(.*?)\*\*/gim, "<strong>$1</strong>")
-    .replace(/\*(.*?)\*/gim, "<em>$1</em>")
-    .replace(/\n\n/gim, "<br/>");
-
-  if (finalAns.trim()) {
-    let formattedAns = finalAns
-      .replace(/^\- (.*$)/gim, "<li>$1</li>")
-      .replace(/\*\*(.*?)\*\*/gim, "<strong>$1</strong>")
-      .replace(/\*(.*?)\*/gim, "<em>$1</em>")
-      .replace(/\n\n/gim, "<br/>");
-    
-    html += `
-      <div class="terminal-final-ans">
-        <div class="final-ans-header">🎯 FINAL VERIFIED ANSWER</div>
-        <div class="final-ans-content">${formattedAns}</div>
-      </div>
-    `;
-  }
-
-  return html;
-}
-
-function renderKaTeX() {
+  // Render LaTeX math via KaTeX
   if (window.renderMathInElement) {
-    window.renderMathInElement(document.body, {
+    window.renderMathInElement(container, {
       delimiters: [
         { left: "$$", right: "$$", display: true },
         { left: "$", right: "$", display: false },
@@ -662,11 +429,184 @@ function renderKaTeX() {
   }
 }
 
-function copyTerminalMarkdown() {
-  if (latestTerminalMarkdown) {
-    navigator.clipboard.writeText(latestTerminalMarkdown);
-    alert("Proof Markdown copied to clipboard!");
-  } else {
-    alert("Synthesize a proof first.");
-  }
+function formatMarkdownContent(text) {
+  if (!text) return "";
+  let html = text
+    .replace(/^### (.*$)/gim, "<h4>$1</h4>")
+    .replace(/^## (.*$)/gim, "<h3>$1</h3>")
+    .replace(/^# (.*$)/gim, "<h2>$1</h2>")
+    .replace(/\*\*(.*?)\*\*/gim, "<strong>$1</strong>")
+    .replace(/\*(.*?)\*/gim, "<em>$1</em>")
+    .replace(/`([^`]+)`/gim, "<code>$1</code>")
+    .replace(/\n\n/gim, "<br><br>")
+    .replace(/\n/gim, "<br>");
+  return html;
 }
+
+// 6. Multi-Turn Interactive Doubt Chat
+function initChat() {
+  const sendBtn = document.getElementById("chatSendBtn");
+  const input = document.getElementById("chatUserQuery");
+
+  sendBtn?.addEventListener("click", () => sendChatMessage());
+  input?.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") sendChatMessage();
+  });
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById("chatUserQuery");
+  const text = input.value.trim();
+  if (!text) return;
+
+  const box = document.getElementById("chatHistoryBox");
+  input.value = "";
+
+  // Append user message
+  const userMsgEl = document.createElement("div");
+  userMsgEl.className = "chat-msg user-msg";
+  userMsgEl.innerHTML = `<div class="chat-role-badge">YOU (STUDENT)</div><div class="chat-text">${text}</div>`;
+  box.appendChild(userMsgEl);
+  box.scrollTop = box.scrollHeight;
+
+  chatMessages.push({ role: "user", content: text });
+
+  // Bot loading placeholder
+  const botMsgEl = document.createElement("div");
+  botMsgEl.className = "chat-msg bot-msg";
+  botMsgEl.innerHTML = `<div class="chat-role-badge">CALYPSO MENTOR</div><div class="chat-text loading-pulse">Thinking...</div>`;
+  box.appendChild(botMsgEl);
+  box.scrollTop = box.scrollHeight;
+
+  try {
+    const subject = document.getElementById("subjectInput")?.value || "Algorithms";
+    const topic = document.getElementById("topicInput")?.value || "General";
+
+    const resp = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: chatMessages,
+        subject,
+        topic,
+      }),
+    });
+    const data = await resp.json();
+    const replyText = data.reply || "Clarification synthesized.";
+
+    botMsgEl.querySelector(".chat-text").innerHTML = formatMarkdownContent(replyText);
+    chatMessages.push({ role: "assistant", content: replyText });
+
+    if (window.renderMathInElement) {
+      window.renderMathInElement(botMsgEl, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "$", right: "$", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+  } catch (err) {
+    botMsgEl.querySelector(".chat-text").textContent = `Error: ${err.message}`;
+  }
+  box.scrollTop = box.scrollHeight;
+}
+
+// 7. Arena Battle
+function initArena() {
+  const btn = document.getElementById("runArenaBtn");
+  btn?.addEventListener("click", async () => {
+    const subject = document.getElementById("subjectInput").value;
+    const topic = document.getElementById("topicInput").value || "General";
+    const question = document.getElementById("questionTextInput").value.trim();
+    if (!question) {
+      alert("Please formulate a question on the left dock first.");
+      return;
+    }
+
+    const baseEl = document.getElementById("arenaBaseContent");
+    const ftEl = document.getElementById("arenaFtContent");
+    if (baseEl) baseEl.innerHTML = '<div class="loading-spinner">Evaluating base model...</div>';
+    if (ftEl) ftEl.innerHTML = '<div class="loading-spinner">Synthesizing fine-tuned proof...</div>';
+
+    try {
+      const resp = await fetch("/api/compare", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject,
+          topic,
+          question,
+        }),
+      });
+      const data = await resp.json();
+      if (baseEl) baseEl.innerHTML = formatMarkdownContent(data.base_model_result.solution_markdown);
+      if (ftEl) ftEl.innerHTML = formatMarkdownContent(data.finetuned_model_result.solution_markdown);
+
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.getElementById("arenaTerminalView"), {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "$", right: "$", display: false },
+          ],
+          throwOnError: false,
+        });
+      }
+    } catch (err) {
+      if (baseEl) baseEl.textContent = `Error: ${err.message}`;
+    }
+  });
+}
+
+// 8. Python Sandbox Tool
+function initPythonSandbox() {
+  const runBtn = document.getElementById("executePythonBtn");
+  runBtn?.addEventListener("click", async () => {
+    const code = document.getElementById("sandboxPythonCode").value;
+    const outBox = document.getElementById("sandboxPythonOutput");
+    outBox.style.display = "block";
+    outBox.innerHTML = "Executing in sandbox...";
+
+    try {
+      const resp = await fetch("/api/tools/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tool_name: "code_interpreter",
+          code: code,
+        }),
+      });
+      const res = await resp.json();
+      if (res.success) {
+        outBox.innerHTML = `<strong>Output (${res.elapsed_ms}ms):</strong><br><pre>${res.output || "(Code executed with no output)"}</pre>`;
+      } else {
+        outBox.innerHTML = `<span style="color:var(--accent-red)">Error: ${res.error}</span>`;
+      }
+    } catch (err) {
+      outBox.innerHTML = `<span style="color:var(--accent-red)">Error: ${err.message}</span>`;
+    }
+  });
+}
+
+function openInteractivePythonRunner() {
+  const m = document.getElementById("pythonModal");
+  if (m) m.style.display = "flex";
+}
+
+function closeInteractivePythonRunner() {
+  const m = document.getElementById("pythonModal");
+  if (m) m.style.display = "none";
+}
+
+function copyTerminalMarkdown() {
+  const container = document.getElementById("proofPhasesContainer");
+  if (!container) return;
+  navigator.clipboard.writeText(container.innerText).then(() => {
+    alert("Proof Markdown copied to clipboard!");
+  });
+}
+
+window.copyTerminalMarkdown = copyTerminalMarkdown;
+window.openInteractivePythonRunner = openInteractivePythonRunner;
+window.closeInteractivePythonRunner = closeInteractivePythonRunner;
+window.clearOcrImage = clearOcrImage;

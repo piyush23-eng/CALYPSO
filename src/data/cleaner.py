@@ -70,6 +70,10 @@ class DataCleaner:
         self.lsh = MinHashLSH(threshold=lsh_threshold, num_perm=num_perm)
         self.seen_hashes: Set[str] = set()
 
+    def clean_text(self, text: str) -> str:
+        """Alias for clean_html_to_markdown to clean plain or HTML text."""
+        return self.clean_html_to_markdown(text)
+
     def clean_html_to_markdown(self, raw_html: str) -> str:
         """Converts raw HTML snippet into clean markdown with standardized LaTeX math."""
         if not raw_html or not raw_html.strip():
